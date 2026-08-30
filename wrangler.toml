@@ -1,0 +1,10 @@
+# Cloudflare Workers 部署配置
+# 构建产出在 dist/，由 Workers 的 [assets] 静态托管
+name = "flygeon-blog"
+main = "worker/index.js"
+compatibility_date = "2025-01-01"
+
+# 静态资源托管：直接 serve dist/ 下的文件（SSG 预渲染产物）
+[assets]
+directory = "dist"
+binding = "ASSETS"

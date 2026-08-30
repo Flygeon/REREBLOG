@@ -1,0 +1,40 @@
+// ============================================================
+// 全站样式入口
+//
+// 层次（顺序即 CSS 输出顺序，后者可覆盖前者）：
+//   1. _template.scss   —— UI 模板原始样式（M3 令牌 + 落地页组件基元），原样保留
+//   2. _tokens-extra    —— 博客所需的补充令牌（不覆盖模板已有取值）
+//   3. 本文件全局基础   —— 少量可访问性与滚动条等补充
+//   4. _markdown        —— 正文排版（markdown-body / shiki / admonition）
+//   5. _blog            —— 博客功能层（列表 / 文章 / 归档 / 番剧 …）
+// ============================================================
+
+@use "./template";
+@use "./tokens-extra";
+@use "./markdown";
+@use "./blog";
+
+/* ---------- 全局基础补充（模板未覆盖的部分） ---------- */
+html {
+  // 始终保留滚动条槽位，避免长短页面切换时内容横移
+  overflow-y: scroll;
+}
+
+// 聚焦可见性（可访问性）
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+// 正文链接默认沿用主色（模板落地页为 inherit，博客正文需要可辨识链接）
+.markdown-body a,
+.page__ext,
+.post__category,
+.post__tag {
+  color: var(--md-sys-color-primary);
+}
+
+// 顶栏内链接不显示下划线（模板 a 为 no-decoration，这里保持一致性）
+.app-bar a:hover {
+  text-decoration: none;
+}

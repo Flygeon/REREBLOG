@@ -1,0 +1,50 @@
+node_modules
+.DS_Store
+/build
+/coverage
+out
+*.log
+.idea
+*.sw*
+.wrangler
+
+# 构建产物
+dist
+dist-ssr
+
+# 本地工具数据
+.workbuddy/
+_tmp_*
+
+# ---- MDC-Web 模板遗留 ----
+# 这些是原始 HTML 模板（Material Components Web）自带的目录/文件，
+# 原始副本已归档到 _legacy/，不纳入本仓库。
+demos/
+docs/
+docs-cn/
+packages/
+site/
+test/
+fonts/
+icons/
+_legacy/
+组件库参考/
+.github/
+
+# scripts/ 下只有 ssg.mjs 与 sitemap-rss.mjs 属于本站，
+# 其余为 MDC-Web 的发布/构建脚本
+scripts/build/
+scripts/lib/
+scripts/webpack/
+scripts/build-css.js
+scripts/check-imports.js
+scripts/check-pkg-for-release.js
+scripts/closure-test.sh
+scripts/cp-pkgs.js
+scripts/dependency-test.sh
+scripts/determine-pkg-versions.js
+scripts/post-release.sh
+scripts/pre-release.sh
+scripts/rewrite-decl-statements-for-closure-test.js
+scripts/rewrite-sass-import-statements-for-closure.js
+scripts/sass-closure-rewriter.sh

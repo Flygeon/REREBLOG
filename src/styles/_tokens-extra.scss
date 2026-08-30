@@ -1,0 +1,142 @@
+// ============================================================
+// 模板令牌补充层
+//
+// _template.scss 原样保留了模板（LumiLuna 官网）的 M3 令牌与组件样式，
+// 本文件只做「补缺」，不覆盖模板已有取值，避免改变模板 UI：
+//   1. 模板字体栈是本地字体（SarasaGothicSC），此处在保持原顺序的前提下
+//      补入站点已加载的 Noto Sans SC 作为次选，保证访客端观感一致
+//   2. 补齐博客功能需要的度量/状态层/字体族令牌（模板为落地页，未定义）
+//   3. Varlet UI 组件库色板映射到站点 MD3 令牌
+// ============================================================
+
+:root {
+  /* ---- 字体：原模板字体优先，未安装时回落到站点字体 ---- */
+  --ll-font: "SarasaGothicSC-Regular", "Noto Sans SC", "SFPro-Regular",
+    "Helvetica Neue", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+
+  --md-font-brand: var(--ll-font);
+  --md-font-plain: var(--ll-font);
+  --md-font-code: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, Menlo,
+    Consolas, "Liberation Mono", monospace;
+
+  /* ---- 布局度量 ---- */
+  --md-layout-content-max: 880px; // 正文阅读列宽
+  --md-layout-shell-max: var(--ll-maxw); // 页面外壳宽度（与模板容器一致）
+  --md-layout-sidebar-w: 20rem; // 右侧信息栏
+  --md-layout-gutter: var(--lm-content-pad);
+  --md-layout-header-h: 64px; // 与模板 .app-bar 高度一致
+
+  /* ---- 排版阶梯：补齐模板落地页未用到的两级 headline ---- */
+  --md-sys-typescale-headline-large-size: 30px;
+  --md-sys-typescale-headline-large-weight: 700;
+  --md-sys-typescale-headline-large-line-height: 40px;
+  --md-sys-typescale-headline-medium-size: 24px;
+  --md-sys-typescale-headline-medium-weight: 600;
+  --md-sys-typescale-headline-medium-line-height: 32px;
+
+  /* ---- 状态层：由当前主色推导，亮暗自动跟随 ---- */
+  --md-sys-state-hover: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 8%,
+    transparent
+  );
+  --md-sys-state-focus: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
+  --md-sys-state-pressed: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
+  --md-sys-state-dragged: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 16%,
+    transparent
+  );
+
+  /* ---- Elevation：对齐模板阴影口径（模板为 --md-elevation-1/2/3） ---- */
+  --md-sys-elevation-0: none;
+  --md-sys-elevation-1: var(--md-elevation-1);
+  --md-sys-elevation-2: var(--md-elevation-2);
+  --md-sys-elevation-3: var(--md-elevation-3);
+  --md-sys-elevation-4: 0 8px 24px rgba(0, 0, 0, 0.28);
+
+  /* ---- 色阶修正 ----
+     模板 surface-container-high 原值为 #ECEEE0（偏绿），与站点蓝调主题不搭，
+     且它被多处用作 hover 背景（顶栏导航、outlined 按钮等）。
+     按 M3 中性色阶（lowest #FFF → low #F6F7F9 → container #F2F3F5 → high →
+     highest #E2E4E7）补入中性值 #EAECF0，保持与相邻色阶连续。 */
+  --md-sys-color-surface-container-high: #EAECF0;
+
+  /* ============================================================
+     Varlet UI 色板映射（--color-* ← MD3 令牌）
+     仅影响 .var-* 组件（分页 / 标签页），不干涉模板组件样式
+     ============================================================ */
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-primary-container: var(--md-sys-color-primary-container);
+  --color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-secondary-container: var(--md-sys-color-secondary-container);
+  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-surface: var(--md-sys-color-surface);
+  --color-surface-container: var(--md-sys-color-surface-container);
+  --color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --color-surface-container-highest: var(
+    --md-sys-color-surface-container-highest
+  );
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
+  --color-outline-variant: var(--md-sys-color-outline-variant);
+  --color-error: var(--md-sys-color-error);
+  --color-on-error: var(--md-sys-color-on-error);
+  --color-error-container: var(--md-sys-color-error-container);
+  --color-on-error-container: var(--md-sys-color-on-error-container);
+  --color-danger: var(--md-sys-color-error);
+  --color-on-danger: var(--md-sys-color-on-error);
+  --color-danger-container: var(--md-sys-color-error-container);
+  --color-on-danger-container: var(--md-sys-color-on-error-container);
+  --color-disabled: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 12%,
+    transparent
+  );
+  --color-text-disabled: var(--md-sys-color-on-surface-variant);
+  --padding-sm: 0.25rem;
+  --padding-md: 0.5rem;
+  --padding-lg: 0.75rem;
+  --padding-xl: 1rem;
+  --font-size-sm: 0.75rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --border-radius: 0.5rem;
+}
+
+[data-theme="dark"] {
+  /* 深色下模板该值本就是中性（#24262A），无需修正 */
+  --md-sys-state-hover: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
+  --md-sys-state-focus: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 16%,
+    transparent
+  );
+  --md-sys-state-pressed: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 16%,
+    transparent
+  );
+  --md-sys-state-dragged: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 20%,
+    transparent
+  );
+}

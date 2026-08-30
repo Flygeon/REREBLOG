@@ -1,0 +1,339 @@
+// ============================================================
+// Markdown 正文排版（.markdown-body）
+// 沿用模板的 M3 语义色与圆角口径，适配 shiki 双主题高亮
+// 注意：模板对 pre 设了全局 padding，此处显式归零，改由 pre > code 控制内距
+// ============================================================
+.markdown-body {
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: 1.75;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  > :first-child {
+    margin-top: 0;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 1.75em 0 0.7em;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--md-sys-color-on-surface);
+    scroll-margin-top: calc(var(--md-layout-header-h) + 1.5rem);
+  }
+  h1 {
+    font-size: var(--md-sys-typescale-headline-large-size);
+    font-weight: 700;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 0.35em;
+  }
+  h2 {
+    font-size: var(--md-sys-typescale-headline-medium-size);
+    font-weight: 700;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 0.3em;
+  }
+  h3 {
+    font-size: var(--md-sys-typescale-title-large-size);
+  }
+  h4 {
+    font-size: 1.05rem;
+  }
+  h5,
+  h6 {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  p {
+    margin: 0.9em 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.9em 0;
+    padding-left: 1.6em;
+  }
+  li {
+    margin: 0.3em 0;
+    line-height: 1.75;
+  }
+  li > ul,
+  li > ol {
+    margin: 0.2em 0;
+  }
+
+  blockquote {
+    margin: 1.1em 0;
+    padding: 0.4em 1.1em;
+    border-left: 4px solid var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container);
+    border-radius: 0 var(--md-sys-shape-corner-small)
+      var(--md-sys-shape-corner-small) 0;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  blockquote p {
+    margin: 0.4em 0;
+  }
+
+  a {
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--md-sys-color-primary) 35%, transparent);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  a:hover {
+    border-bottom-color: var(--md-sys-color-primary);
+    text-decoration: none;
+    background: var(--md-sys-state-hover);
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: var(--md-sys-shape-corner-medium);
+    display: block;
+    margin: 1.2em auto;
+    box-shadow: var(--md-sys-elevation-1);
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    margin: 2.2em 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2em 0;
+    font-size: 0.92rem;
+    display: block;
+    overflow-x: auto;
+  }
+  th,
+  td {
+    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0.55em 0.9em;
+    text-align: left;
+  }
+  th {
+    background: var(--md-sys-color-surface-container);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  code {
+    font-family: var(--md-font-code);
+    font-size: 0.88em;
+    background: var(--md-sys-color-surface-container);
+    padding: 0.15em 0.4em;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    color: var(--md-sys-color-primary);
+    font-variant-ligatures: none;
+  }
+
+  pre {
+    margin: 1.2em 0;
+    padding: 0; // 覆盖模板全局 pre 内距，交给 pre code
+    border-radius: var(--md-sys-shape-corner-medium);
+    overflow-x: auto;
+    background: var(--md-sys-color-surface-container);
+    box-shadow: var(--md-sys-elevation-1);
+    position: relative;
+    line-height: 1.6;
+    font-size: inherit;
+  }
+  pre code {
+    display: block;
+    padding: 1.1em 1.3em;
+    background: transparent;
+    color: inherit;
+    font-size: 0.875rem;
+    line-height: inherit;
+    overflow-x: auto;
+    border-radius: 0;
+  }
+  // shiki 双主题：浅色/深色各自定义，由 data-theme 切换生效
+  pre.shiki {
+    background-color: var(--md-sys-color-surface-container) !important;
+  }
+  html[data-theme="light"] .shiki,
+  html[data-theme="light"] .shiki span {
+    color: var(--shiki-light) !important;
+    background-color: var(--md-sys-color-surface-container) !important;
+    font-style: var(--shiki-light-font-style, normal) !important;
+    font-weight: var(--shiki-light-font-weight, normal) !important;
+    text-decoration: var(--shiki-light-text-decoration, none) !important;
+  }
+  html[data-theme="dark"] .shiki,
+  html[data-theme="dark"] .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--md-sys-color-surface-container) !important;
+    font-style: var(--shiki-dark-font-style, normal) !important;
+    font-weight: var(--shiki-dark-font-weight, normal) !important;
+    text-decoration: var(--shiki-dark-text-decoration, none) !important;
+  }
+
+  // ---- admonition 提示块（:::tip 等） ----
+  blockquote.admonition {
+    border-left: 4px solid var(--admonition-color, var(--md-sys-color-primary));
+    padding: 0.7em 1.2em;
+    background: var(--admonition-bg, var(--md-sys-color-surface-container));
+    border-radius: 0 var(--md-sys-shape-corner-medium)
+      var(--md-sys-shape-corner-medium) 0;
+  }
+  blockquote.admonition .bdm-title {
+    display: block;
+    font-weight: 700;
+    color: var(--admonition-color, var(--md-sys-color-primary));
+    margin-bottom: 0.4em;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  blockquote.admonition p {
+    margin: 0.4em 0;
+  }
+  blockquote.admonition.bdm-note {
+    --admonition-color: var(--md-sys-color-secondary);
+    --admonition-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-secondary) 10%,
+      transparent
+    );
+  }
+  blockquote.admonition.bdm-tip {
+    --admonition-color: oklch(60% 0.13 160);
+    --admonition-bg: color-mix(in srgb, oklch(60% 0.13 160) 10%, transparent);
+  }
+  blockquote.admonition.bdm-important {
+    --admonition-color: oklch(58% 0.15 285);
+    --admonition-bg: color-mix(in srgb, oklch(58% 0.15 285) 10%, transparent);
+  }
+  blockquote.admonition.bdm-caution {
+    --admonition-color: oklch(68% 0.15 75);
+    --admonition-bg: color-mix(in srgb, oklch(68% 0.15 75) 10%, transparent);
+  }
+  blockquote.admonition.bdm-warning {
+    --admonition-color: oklch(55% 0.19 27);
+    --admonition-bg: color-mix(in srgb, oklch(55% 0.19 27) 10%, transparent);
+  }
+
+  // ---- spoiler 剧透隐藏（:spoiler[~~text~~]） ----
+  spoiler {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    padding: 0.1em 0.35em;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease, background 0.2s ease;
+
+    * {
+      color: inherit;
+      transition: color 0.2s ease;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: var(--md-sys-color-on-surface);
+      background: var(--md-sys-color-surface-container);
+      user-select: text;
+
+      * {
+        color: var(--md-sys-color-on-surface);
+      }
+    }
+  }
+}
+
+// ---- GitHub 卡片（::github{repo}） ----
+.card-github {
+  display: block;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  padding: 1rem 1.2rem;
+  margin: 1.2em 0;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-github:hover {
+  box-shadow: var(--md-sys-elevation-2);
+  transform: translateY(-1px);
+  text-decoration: none !important;
+}
+.card-github .gc-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.card-github .gc-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+.card-github .gc-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card-github .gc-avatar {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-outline-variant);
+  background-size: cover;
+  background-position: center;
+}
+.card-github .gc-divider {
+  opacity: 0.5;
+}
+.card-github .gc-repo {
+  color: var(--md-sys-color-primary);
+}
+.card-github .gc-description {
+  font-size: 0.9rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 0.75rem;
+}
+.card-github .gc-infobar {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.card-github .github-logo {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.card-github.fetch-waiting .github-logo {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 50%;
+  animation: md-pulse 1.2s ease-in-out infinite;
+}
+.card-github.fetch-error {
+  opacity: 0.6;
+}
+@keyframes md-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

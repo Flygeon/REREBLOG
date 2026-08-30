@@ -1,0 +1,17 @@
+/*
+ * 占位文件 —— 故意留空。
+ *
+ * YuuComments 的 comments.js 在启用公式渲染时会无条件注入一个 KaTeX 样式表。
+ * 但本博客已经在 src/layouts/Layout.astro 里全站引入了 `katex/dist/katex.css`
+ * （KaTeX 0.16.27，字体文件由 Astro 一并打包进 /_astro/）。
+ *
+ * 若再从 CDN 拉一份 KaTeX CSS，会造成：
+ *   1. 约 23KB 样式重复加载；
+ *   2. 触发第二套 KaTeX 字体请求（额外几百 KB）；
+ *   3. CDN 版本（0.16.10）与本站 JS/CSS 版本（0.16.27）不一致。
+ *
+ * 因此把 assetBase 的 katexCss 指向这个空文件，让注入变成无副作用操作。
+ * 真正的 KaTeX 样式仍由全站那份提供。
+ *
+ * 详见 src/components/comments/Comments.astro 中的 YuuCommentsConfig 配置。
+ */

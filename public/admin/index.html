@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YuuComments Admin</title>
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body data-api-base="https://comments.flygeon.top" data-markdown="true" data-math="true">
+    <main class="ya-shell">
+      <header class="ya-page-header">
+        <div>
+          <p>YuuComments</p>
+          <h1 data-i18n="adminTitle">Comment management</h1>
+        </div>
+        <button type="button" data-language-toggle>中文</button>
+      </header>
+
+      <nav class="ya-tabs" data-view-tabs></nav>
+
+      <section class="ya-toolbar">
+        <form data-token-form>
+          <label>
+            <span>ADMIN_TOKEN</span>
+            <input type="password" name="token" autocomplete="off" />
+          </label>
+          <button type="submit" data-i18n="save">Save</button>
+        </form>
+
+        <label>
+          <span data-i18n="search">Search</span>
+          <input
+            type="search"
+            data-search
+            data-i18n-placeholder="searchPlaceholder"
+            placeholder="Nickname, content, or page path"
+          />
+        </label>
+
+        <div class="ya-filters" data-filters></div>
+      </section>
+
+      <p class="ya-feedback" data-feedback></p>
+      <section class="ya-grid" data-comments></section>
+      <section class="ya-grid" data-reports hidden></section>
+      <section class="ya-grid" data-bans hidden></section>
+    </main>
+
+    <dialog class="ya-dialog" data-spam-ban-dialog>
+      <form method="dialog" data-spam-ban-form>
+        <header>
+          <div>
+            <p data-i18n="moderationAction">Moderation action</p>
+            <h2 data-i18n="spamBanTitle">Mark spam &amp; ban source</h2>
+          </div>
+          <button type="button" data-spam-ban-close aria-label="Close">&times;</button>
+        </header>
+
+        <p data-i18n="spamBanDescription">
+          This will mark the comment as spam and block the selected source from
+          submitting new comments.
+        </p>
+
+        <fieldset>
+          <legend data-i18n="banTarget">Ban target</legend>
+          <div class="ya-choice-grid">
+            <label class="ya-choice">
+              <input type="radio" name="banTarget" value="device" checked />
+              <strong data-i18n="deviceFingerprint">Device fingerprint</strong>
+              <span data-i18n="deviceDescription">Recommended. Best for blocking the same browser/device.</span>
+            </label>
+            <label class="ya-choice">
+              <input type="radio" name="banTarget" value="ip" />
+              <strong data-i18n="ipHash">IP hash</strong>
+              <span data-i18n="ipDescription">May affect users on the same network.</span>
+            </label>
+            <label class="ya-choice">
+              <input type="radio" name="banTarget" value="both" />
+              <strong data-i18n="both">Both</strong>
+              <span data-i18n="bothDescription">Strongest option for obvious spam/bot abuse.</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend data-i18n="banReason">Ban reason</legend>
+          <div class="ya-reason-grid">
+            <label><input type="radio" name="banReason" value="Spam" checked /> <span data-i18n="reasonSpam">Spam</span></label>
+            <label><input type="radio" name="banReason" value="Ads" /> <span data-i18n="reasonAds">Ads</span></label>
+            <label><input type="radio" name="banReason" value="Bot" /> <span data-i18n="reasonBot">Bot</span></label>
+            <label><input type="radio" name="banReason" value="Abuse" /> <span data-i18n="reasonAbuse">Abuse</span></label>
+            <label><input type="radio" name="banReason" value="Offensive" /> <span data-i18n="reasonOffensive">Offensive</span></label>
+            <label><input type="radio" name="banReason" value="Other" /> <span data-i18n="reasonOther">Other</span></label>
+          </div>
+          <label data-custom-reason hidden>
+            <span data-i18n="customReason">Custom reason</span>
+            <input type="text" name="customReason" maxlength="500" />
+          </label>
+        </fieldset>
+
+        <p class="ya-dialog-feedback" data-spam-ban-feedback></p>
+        <footer>
+          <button type="button" data-spam-ban-cancel data-i18n="cancel">Cancel</button>
+          <button type="submit" class="is-danger" data-i18n="markSpamBan">Mark spam &amp; ban</button>
+        </footer>
+      </form>
+    </dialog>
+    <script src="./admin.js" defer></script>
+  </body>
+</html>
