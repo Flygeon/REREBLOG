@@ -4,44 +4,12 @@
       <div class="eyebrow">Bangumi</div>
       <h1 class="section-title">番剧</h1>
       <p class="section-sub">
-        我的 Bangumi 追番收藏，数据通过 Bangumi API 实时同步，支持国内反代与官方图源切换。
+        我的 Bangumi 追番收藏。首屏由构建期快照静态渲染，访问时自动同步最新数据，封面经站内 R2 镜像加速。
       </p>
     </header>
 
-    <!-- 图源切换 + 均分（对齐原站：国内反代源 / 官方源） -->
+    <!-- 均分（快照数据随构建更新，后台刷新后自动重算） -->
     <div v-if="items.length" class="bangumi__source-row">
-      <button
-        v-ripple
-        type="button"
-        class="bangumi__source-card"
-        :class="{ 'bangumi__source-card--active': imageSource === 'domestic' }"
-        :aria-pressed="imageSource === 'domestic'"
-        @click="imageSource = 'domestic'"
-      >
-        <span class="bangumi__source-icon">
-          <AppIcon name="database" :size="22" />
-        </span>
-        <span>
-          <span class="bangumi__source-label">图源</span>
-          <span class="bangumi__source-name">国内源</span>
-        </span>
-      </button>
-      <button
-        v-ripple
-        type="button"
-        class="bangumi__source-card"
-        :class="{ 'bangumi__source-card--active': imageSource === 'official' }"
-        :aria-pressed="imageSource === 'official'"
-        @click="imageSource = 'official'"
-      >
-        <span class="bangumi__source-icon">
-          <AppIcon name="public" :size="22" />
-        </span>
-        <span>
-          <span class="bangumi__source-label">图源</span>
-          <span class="bangumi__source-name">官方源</span>
-        </span>
-      </button>
       <div class="bangumi__source-card bangumi__source-card--static">
         <span class="bangumi__source-icon">
           <AppIcon name="star" :size="22" />
@@ -73,30 +41,8 @@
       </var-tabs>
     </div>
 
-    <!-- 加载骨架屏（复用卡片网格布局，避免加载完成前后跳动） -->
-    <template v-if="loading">
-      <section
-        class="bangumi__grid"
-        aria-busy="true"
-        aria-label="番剧数据加载中"
-      >
-        <div v-for="n in 12" :key="n" class="bangumi__card-skeleton">
-          <div class="bangumi__sk-img"></div>
-          <div class="bangumi__sk-info">
-            <div class="bangumi__sk-line"></div>
-            <div class="bangumi__sk-line bangumi__sk-line--meta"></div>
-          </div>
-        </div>
-      </section>
-    </template>
-
-    <!-- 错误 -->
-    <div v-else-if="error" class="bangumi__state">
-      番剧数据加载失败：{{ error }}
-    </div>
-
-    <!-- 卡片网格 -->
-    <section v-else class="bangumi__grid" aria-label="番剧收藏">
+    <!-- 卡片网格（SSG 预渲染即含数据，无需骨架屏） -->
+    <section v-if="items.length" class="bangumi__grid" aria-label="番剧收藏">
       <a
         v-for="item in filteredItems"
         :key="item.subject_id"
@@ -107,20 +53,21 @@
       >
         <div class="bangumi__card-img">
           <img
-            :src="coverUrl(item)"
-            :alt="item.subject.name_cn || item.subject.name"
+            v-if="item.cover"
+            :src="item.cover"
+            :alt="item.name_cn || item.name"
             loading="lazy"
           />
-          <span v-if="item.subject.score > 0" class="bangumi__card-score">
-            {{ item.subject.score }}
+          <span v-if="item.score > 0" class="bangumi__card-score">
+            {{ item.score }}
           </span>
         </div>
         <div class="bangumi__card-info">
           <div
             class="bangumi__card-title"
-            :title="item.subject.name_cn || item.subject.name"
+            :title="item.name_cn || item.name"
           >
-            {{ item.subject.name_cn || item.subject.name }}
+            {{ item.name_cn || item.name }}
           </div>
           <div class="bangumi__card-meta">{{ statusLabel(item.type) }}</div>
         </div>
@@ -128,38 +75,33 @@
     </section>
 
     <!-- 空 -->
-    <div
-      v-if="!loading && !error && items.length === 0"
-      class="bangumi__state"
-    >
-      暂无番剧数据
-    </div>
+    <div v-else class="bangumi__state">暂无番剧数据</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
 import { setHead } from "@lib/head";
+import snapshot from "@/data/bangumi.json";
 
 setHead({
   title: "番剧收藏 - 我的 Bangumi 追番列表 | Flygeonの小站",
   description:
-    "Flygeon 在 Bangumi 的番剧收藏簿：想看、在看、看过的动画与评分一览，数据通过 Bangumi API 实时同步，支持国内反代与官方图源切换。",
+    "Flygeon 在 Bangumi 的番剧收藏簿：想看、在看、看过的动画与评分一览。首屏静态秒开，数据自动同步，封面经站内镜像加速。",
 });
 
 const BANGUMI_USERNAME = "1250652";
-const API_BASE = "https://api.bgm.tv/v0";
+// 站内反代（Worker 转发 api.bgm.tv 并做边缘缓存，国内外均可访问）
+const API_BASE = "/api/bgm/v0";
 
 interface BangumiItem {
   subject_id: number;
   type: number; // 1 wish 2 collect 3 doing 4 on_hold 5 dropped
-  subject: {
-    name: string;
-    name_cn: string;
-    score: number;
-    images?: { common: string; large: string } | null;
-  };
+  name: string;
+  name_cn: string;
+  score: number;
+  cover: string; // 站内相对路径（Worker R2 镜像同路径托管）
 }
 
 const STATUS_LABELS: Record<number, string> = {
@@ -179,9 +121,9 @@ const statusMap: Record<string, number[]> = {
   dropped: [5],
 };
 
-const items = ref<BangumiItem[]>([]);
-const loading = ref(true);
-const error = ref("");
+// 初始数据来自构建期快照（SSG 预渲染与客户端水合使用同一份，
+// 首屏秒开且无水合不匹配；访问后由 SWR 静默刷新）
+const items = ref<BangumiItem[]>(snapshot.items);
 const activeFilter = ref("all");
 
 const filters = computed(() => {
@@ -204,45 +146,41 @@ const filteredItems = computed(() =>
   items.value.filter((i) => statusMap[activeFilter.value]?.includes(i.type)),
 );
 
-/* ---- 图源切换：国内反代 lain.flygeon.top / 官方 lain.bgm.tv ---- */
-const SOURCE_STORAGE_KEY = "bangumi-image-source";
-const imageSource = ref<"domestic" | "official">(
-  typeof localStorage !== "undefined" &&
-    localStorage.getItem(SOURCE_STORAGE_KEY) === "official"
-    ? "official"
-    : "domestic",
-);
-watch(imageSource, (v) => {
-  try {
-    localStorage.setItem(SOURCE_STORAGE_KEY, v);
-  } catch {
-    /* ignore */
-  }
-});
-
-/** 按当前图源取封面：官方 URL 替换 host 得到反代地址 */
-function coverUrl(item: BangumiItem): string {
-  const official = item.subject.images?.common || "";
-  if (!official || imageSource.value === "official") return official;
-  return official.replace(
-    "https://lain.bgm.tv/",
-    "https://lain.flygeon.top/",
-  );
-}
-
 /** 当前筛选下有评分条目的均分 */
 const averageScore = computed(() => {
-  const scored = filteredItems.value.filter((i) => i.subject.score > 0);
+  const scored = filteredItems.value.filter((i) => i.score > 0);
   if (!scored.length) return 0;
-  return scored.reduce((sum, i) => sum + i.subject.score, 0) / scored.length;
+  return scored.reduce((sum, i) => sum + i.score, 0) / scored.length;
 });
 
 function statusLabel(type: number): string {
   return STATUS_LABELS[type] ?? "未知";
 }
 
-async function fetchCollections(subjectType: number): Promise<BangumiItem[]> {
-  const all: BangumiItem[] = [];
+/** 官方封面 URL → 站内相对路径（Worker R2 镜像同路径托管，含 /r/<size> 缩放前缀） */
+function toPicPath(official?: string | null): string {
+  if (!official) return "";
+  try {
+    return new URL(official).pathname;
+  } catch {
+    return "";
+  }
+}
+
+/** API 原始条目 → 页面条目（拍平 + 封面路径转换） */
+function toItems(raw: any[]): BangumiItem[] {
+  return raw.map((it) => ({
+    subject_id: it.subject_id,
+    type: it.type,
+    name: it.subject?.name ?? "",
+    name_cn: it.subject?.name_cn ?? "",
+    score: it.subject?.score ?? 0,
+    cover: toPicPath(it.subject?.images?.common),
+  }));
+}
+
+async function fetchCollections(subjectType: number): Promise<any[]> {
+  const all: any[] = [];
   let offset = 0;
   const pageSize = 100;
   while (true) {
@@ -261,17 +199,16 @@ async function fetchCollections(subjectType: number): Promise<BangumiItem[]> {
 }
 
 onMounted(async () => {
+  // SWR：后台静默刷新，成功则无缝替换快照；失败（超时/代理异常）保留静态快照
   try {
-    // 番剧 2 + 动画 1（原站逻辑：subject_type 2 = 动画）
     const [anime, book] = await Promise.all([
       fetchCollections(2),
-      fetchCollections(1).catch(() => []),
+      fetchCollections(1).catch(() => [] as any[]),
     ]);
-    items.value = [...anime, ...book];
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : "网络错误";
-  } finally {
-    loading.value = false;
+    const fresh = toItems([...anime, ...book]);
+    if (fresh.length) items.value = fresh;
+  } catch {
+    /* 国内访问失败等场景：静默保留快照数据 */
   }
 });
 </script>

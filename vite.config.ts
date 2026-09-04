@@ -38,5 +38,22 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    proxy: {
+      // dev 环境将 Bangumi API 与封面镜像代理到线上 Worker（同一路由协议）
+      "/api/bgm": {
+        target: "https://flygeon.top",
+        changeOrigin: true,
+      },
+      "/pic": {
+        target: "https://flygeon.top",
+        changeOrigin: true,
+      },
+      "/r": {
+        target: "https://flygeon.top",
+        changeOrigin: true,
+      },
+    },
+  },
 });
 

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:ssg",
-    "build:ssg": "vite build && vite build --config vite.ssr.config.ts && node scripts/ssg.mjs && node scripts/sitemap-rss.mjs",
+    "build:ssg": "node scripts/bangumi.mjs && vite build && vite build --config vite.ssr.config.ts && node scripts/ssg.mjs && node scripts/sitemap-rss.mjs",
     "build:client": "vite build",
     "build:ssr": "vite build --config vite.ssr.config.ts",
     "preview": "vite preview",

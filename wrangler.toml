@@ -8,3 +8,13 @@ compatibility_date = "2025-01-01"
 [assets]
 directory = "dist"
 binding = "ASSETS"
+
+# Bangumi 封面镜像桶：/pic/* 路由读取，miss 时 Worker 回源 lain.bgm.tv 并写回
+[[r2_buckets]]
+binding = "BANGUMI_IMG"
+bucket_name = "flygeon-bangumi"
+
+# 每日 04:00（北京时间，UTC 20:00）读取 dist/bangumi-images.json 清单预热 R2，
+# 覆盖两次构建之间新增的封面，避免国内用户首访回源延迟
+[triggers]
+crons = ["0 20 * * *"]
