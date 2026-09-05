@@ -4,8 +4,7 @@ import { createRouter, createWebHistory, createMemoryHistory } from "vue-router"
 import { routes } from "./router";
 import Varlet from "@varlet/ui";
 import "@varlet/ui/es/varlet.css";
-// Material Symbols 图标字体（硬性约束：不使用 emoji / 字符箭头）
-import "@material-symbols/font-400/rounded.css";
+// 图标字体走 styles/_icons.scss 的自托管子集（Material Symbols，不使用 emoji / 字符箭头）
 import "./styles/main.scss";
 import { reveal } from "@composables/reveal";
 import { ripple } from "@composables/ripple";

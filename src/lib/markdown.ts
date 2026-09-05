@@ -10,32 +10,39 @@
  * 之后 highlight 回调同步使用已加载的高亮器。
  */
 import MarkdownIt from "markdown-it";
-import { createHighlighter, type Highlighter } from "shiki";
+import { createHighlighterCore, type HighlighterCore } from "shiki/core";
+import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 
 const MD_THEME_LIGHT = "github-light";
 const MD_THEME_DARK = "github-dark";
 
-let highlighterPromise: Promise<Highlighter> | null = null;
-function getHighlighter(): Promise<Highlighter> {
+// 按需加载语法：只用这些语言。
+// 不用 `shiki` 全量入口（会把 600+ 语言全拉进依赖图，构建慢、预渲染内存高）；
+// plaintext / txt / text / plain 由 core 内置处理，无需语法文件。
+let highlighterPromise: Promise<HighlighterCore> | null = null;
+function getHighlighter(): Promise<HighlighterCore> {
 	if (!highlighterPromise) {
-		highlighterPromise = createHighlighter({
-			themes: [MD_THEME_LIGHT, MD_THEME_DARK],
-			langs: [
-				"javascript",
-				"typescript",
-				"bash",
-				"json",
-				"html",
-				"css",
-				"scss",
-				"markdown",
-				"vue",
-				"python",
-				"xml",
-				"yaml",
-				"sql",
-				"plaintext",
+		highlighterPromise = createHighlighterCore({
+			themes: [
+				import("shiki/themes/github-light.mjs"),
+				import("shiki/themes/github-dark.mjs"),
 			],
+			langs: [
+				import("shiki/langs/javascript.mjs"),
+				import("shiki/langs/typescript.mjs"),
+				import("shiki/langs/bash.mjs"),
+				import("shiki/langs/json.mjs"),
+				import("shiki/langs/html.mjs"),
+				import("shiki/langs/css.mjs"),
+				import("shiki/langs/scss.mjs"),
+				import("shiki/langs/markdown.mjs"),
+				import("shiki/langs/vue.mjs"),
+				import("shiki/langs/python.mjs"),
+				import("shiki/langs/xml.mjs"),
+				import("shiki/langs/yaml.mjs"),
+				import("shiki/langs/sql.mjs"),
+			],
+			engine: createOnigurumaEngine(import("shiki/wasm")),
 		});
 	}
 	return highlighterPromise;

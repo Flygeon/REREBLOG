@@ -99,6 +99,53 @@ export function getPostBody(slug: string): string | undefined {
 	return allPosts.find((p) => p.slug === slug)?.body;
 }
 
+/* ---------------- 构建期预渲染的正文 HTML ---------------- */
+// scripts/render-content.mjs 在 build:ssg 时把每篇文章 / spec 页渲染好的
+// HTML 写入 src/generated/（gitignore 的中间产物）。生产客户端按需懒加载
+// 这些 JSON，从而把 markdown-it + shiki 从客户端 bundle 中完全移除；
+// dev 与 SSG 侧不存在这些文件，仍走运行时渲染（同一套管线，输出一致）。
+const postHtmlLoaders = import.meta.glob("../generated/posts/*.json", {
+	import: "default",
+}) as Record<string, () => Promise<{ html: string }>>;
+const specHtmlLoaders = import.meta.glob("../generated/spec/*.json", {
+	import: "default",
+}) as Record<string, () => Promise<{ html: string }>>;
+
+/** 是否走运行时渲染（dev 实时生效 / SSR 预渲染同管线） */
+const RUNTIME_RENDER = import.meta.env.DEV || import.meta.env.SSR;
+
+/**
+ * 取文章正文 HTML。
+ * - dev / SSR：运行时用 markdown-it + shiki 渲染（构建期分支会被
+ *   静态替换 + tree-shaking，不污染客户端产物）
+ * - 生产客户端：加载构建期预渲染的 JSON（每个 slug 一个懒 chunk）
+ */
+export async function getPostHtml(slug: string): Promise<string | undefined> {
+	if (RUNTIME_RENDER) {
+		const { renderMarkdown } = await import("./markdown");
+		const body = getPostBody(slug);
+		return body ? await renderMarkdown(body) : undefined;
+	}
+	const loader = postHtmlLoaders[`../generated/posts/${slug}.json`];
+	if (!loader) {
+		console.error(`[posts] 缺少预渲染产物 posts/${slug}.json（请完整执行 build:ssg）`);
+		return undefined;
+	}
+	return (await loader()).html;
+}
+
+/** 取 spec 页（about / friends）正文 HTML，策略同 getPostHtml */
+export async function getSpecHtml(slug: string): Promise<string | undefined> {
+	if (RUNTIME_RENDER) {
+		const spec = getSpec(slug);
+		if (!spec) return undefined;
+		const { renderMarkdown } = await import("./markdown");
+		return renderMarkdown(spec.body);
+	}
+	const loader = specHtmlLoaders[`../generated/spec/${slug}.json`];
+	return loader ? (await loader()).html : undefined;
+}
+
 export interface SpecPage {
 	slug: string;
 	title: string;

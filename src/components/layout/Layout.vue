@@ -32,6 +32,9 @@
 
       <!-- 模板页脚 -->
       <Footer />
+
+      <!-- 返回顶部（下滚一屏后浮现） -->
+      <BackToTop />
     </div>
   </var-style-provider>
 </template>
@@ -41,6 +44,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import AppBar from "@components/layout/AppBar.vue";
 import Footer from "@components/layout/Footer.vue";
+import BackToTop from "@components/BackToTop.vue";
 import Themes from "@varlet/ui/es/themes";
 import { currentTheme } from "@lib/theme";
 

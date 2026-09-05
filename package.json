@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm build:ssg",
-    "build:ssg": "node scripts/bangumi.mjs && vite build && vite build --config vite.ssr.config.ts && node scripts/ssg.mjs && node scripts/sitemap-rss.mjs",
+    "clean": "node scripts/clean.mjs",
+    "build:ssg": "node scripts/clean.mjs && node scripts/bangumi.mjs && vite build --config vite.ssr.config.ts && node scripts/render-content.mjs && vite build && node scripts/ssg.mjs && node scripts/sitemap-rss.mjs",
     "build:client": "vite build",
     "build:ssr": "vite build --config vite.ssr.config.ts",
     "preview": "vite preview",
@@ -16,7 +17,6 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@material-symbols/font-400": "^0.47.0",
     "@varlet/ui": "^3.6.2",
     "buffer": "^6.0.3",
     "sanitize-html": "^2.17.7",

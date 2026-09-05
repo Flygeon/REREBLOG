@@ -35,8 +35,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
-import { getSpec } from "@lib/posts";
-import { renderMarkdown } from "@lib/markdown";
+import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
 
 const html = ref("");
@@ -50,7 +49,7 @@ setHead({
 });
 
 if (spec) {
-  html.value = await renderMarkdown(spec.body);
+  html.value = (await getSpecHtml("friends")) ?? "";
 }
 
 // 友链数据（对齐原 friends.astro 的 items）

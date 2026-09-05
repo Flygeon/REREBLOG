@@ -56,7 +56,9 @@
 
     <!-- 空状态：无结果 -->
     <div v-if="query && results.length === 0" class="search__empty">
-      <p>没有找到与「{{ query }}」相关的文章。</p>
+      <AppIcon class="search__empty-icon" name="search" :size="40" />
+      <p class="search__empty-title">没有找到与「{{ query }}」相关的文章。</p>
+      <p class="search__empty-tip">换个关键词，或看看下方的热门标签。</p>
     </div>
   </div>
 </template>

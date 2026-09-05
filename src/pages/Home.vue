@@ -136,6 +136,10 @@ const pagePosts = computed(() =>
   object-fit: cover;
   object-position: center;
 }
+/* 暗色主题下压暗横幅图，避免亮图在暗色界面里刺眼（scoped 内用 :global 命中 html[data-theme]） */
+:global([data-theme="dark"]) .home__hero-img {
+  filter: brightness(0.82) saturate(1.04);
+}
 .home__hero-scrim {
   position: absolute;
   inset: 0;

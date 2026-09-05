@@ -1,0 +1,51 @@
+// ============================================================
+// Material Symbols 图标字体（子集化自托管）
+//
+// 原方案：@material-symbols/font-400 的 rounded.css + 全量 woff2（0.54MB，
+// 内含 3000+ 图标）。本站实际只用到 20 个图标，故改为自托管子集：
+// 26KB，减少 95%。
+//
+// 子集构成（Google Fonts 按 icon_names 生成，可变字体轴 opsz/wght/FILL/GRAD，
+// 与 AppIcon 的 font-variation-settings 对应）：
+//   arrow_forward, arrow_upward, article, auto_stories, close, dark_mode,
+//   expand_less, expand_more, folder, inventory_2, light_mode, menu,
+//   menu_book, open_in_new, push_pin, route, search, sell, shuffle,
+//   smart_display, star
+//
+// ⚠️ 新增图标后必须重新生成子集，否则新图标会显示为纯文本：
+//   1. 把新图标名追加到上面的列表
+//   2. 访问 https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<逗号分隔的图标名>
+//   3. 取 CSS 里的 woff2 地址下载，覆盖 src/assets/fonts/ 下的字体文件
+//
+// 许可：Material Symbols 由 Google 以 Apache License 2.0 发布
+// https://fonts.google.com/icons
+// ============================================================
+
+@font-face {
+  font-family: "Material Symbols Rounded";
+  font-style: normal;
+  font-weight: 100 700;
+  // block：图标是页面骨架的一部分，避免先显示图标名文本再跳变
+  font-display: block;
+  src: url("../assets/fonts/material-symbols-rounded-subset.woff2")
+    format("woff2");
+}
+
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

@@ -178,8 +178,7 @@ import AppIcon from "@components/AppIcon.vue";
 import Giscus from "@components/Giscus.vue";
 import Toc, { type TocHeading } from "@components/Toc.vue";
 import ScrollProgress from "@components/ScrollProgress.vue";
-import { allPosts, getPostBody, mdToText } from "@lib/posts";
-import { renderMarkdown } from "@lib/markdown";
+import { allPosts, getPostBody, getPostHtml, mdToText } from "@lib/posts";
 import { getCategoryUrl, getTagUrl, toRouterLink } from "@utils/url-utils";
 import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
@@ -265,9 +264,8 @@ async function render() {
   html.value = "";
   headings.value = [];
   if (!post.value) return;
-  const body = getPostBody(post.value.slug);
-  if (body) {
-    const rendered = await renderMarkdown(body);
+  const rendered = await getPostHtml(post.value.slug);
+  if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
   }
@@ -284,9 +282,8 @@ watch(slug, () => {
 // 确保预渲染 HTML 里包含完整文章正文）
 setPostHead(post.value);
 if (post.value) {
-  const body = getPostBody(post.value.slug);
-  if (body) {
-    const rendered = await renderMarkdown(body);
+  const rendered = await getPostHtml(post.value.slug);
+  if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
   }

@@ -76,6 +76,19 @@
   flex-direction: column;
   gap: var(--ll-gap);
 }
+/*
+  列表错峰入场：PostCard 已带 v-reveal（模板 .reveal / .reveal.is-visible），
+  这里按位置叠加 transition-delay，让首屏卡片依次浮现。
+  每卡 45ms，最多 8 张后封顶，避免长列表拖沓。模板 .reveal 在 _template（禁改），
+  本层加载在后，同等特异性下覆盖。reduced-motion 下过渡被压到 0.01ms，延迟无感。
+*/
+.post-list > .reveal {
+  @for $i from 2 through 8 {
+    &:nth-child(#{$i}) {
+      transition-delay: #{($i - 1) * 45}ms;
+    }
+  }
+}
 .post-card {
   position: relative;
   /* 为 state layer 建立独立层叠上下文，使叠层只作用在本卡背景上 */
@@ -556,6 +569,9 @@
   gap: var(--ll-gap);
 }
 .rec-card {
+  /* 同 post-card：为 MD3 state layer 建立独立层叠上下文 */
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -566,9 +582,24 @@
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium);
 }
+/* MD3 state layer：hover 用 on-surface 8% 叠加，亮暗自适应 */
+.rec-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
 .rec-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--md-elevation-2);
+}
+.rec-card:hover::before {
+  opacity: 0.08;
 }
 .rec-card__cover {
   position: relative;
@@ -763,6 +794,26 @@
   padding: 32px 0;
   color: var(--md-sys-color-on-surface-variant);
 }
+.search__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.search__empty-icon {
+  color: var(--md-sys-color-outline);
+  margin-bottom: 4px;
+}
+.search__empty-title {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+.search__empty-tip {
+  margin: 0;
+  font-size: var(--md-sys-typescale-body-medium-size);
+}
 .search__hot {
   display: flex;
   flex-wrap: wrap;
@@ -792,6 +843,9 @@
   padding: 8px 0 32px;
 }
 .friend-card {
+  /* MD3 state layer：叠层需要独立层叠上下文 */
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -803,9 +857,24 @@
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium);
 }
+.friend-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
 .friend-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--md-elevation-2);
+}
+.friend-card:hover::before {
+  opacity: 0.08;
 }
 .friend-card__avatar img {
   width: 48px;
@@ -911,6 +980,9 @@
   padding-bottom: 32px;
 }
 .bangumi__card {
+  /* MD3 state layer：叠层需要独立层叠上下文 */
+  position: relative;
+  isolation: isolate;
   display: block;
   border-radius: var(--ll-radius-tile);
   overflow: hidden;
@@ -920,9 +992,23 @@
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium);
 }
+.bangumi__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
 .bangumi__card:hover {
   transform: translateY(-4px);
   box-shadow: var(--md-elevation-2);
+}
+.bangumi__card:hover::before {
+  opacity: 0.08;
 }
 .bangumi__card-img {
   position: relative;

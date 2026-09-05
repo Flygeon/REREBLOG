@@ -66,8 +66,27 @@ export function toggleTheme() {
   setTheme(next);
 }
 
+/**
+ * 亮暗切换的配色过渡：只在切换那一刻给 <html> 挂 .theme-transition，
+ * 过渡结束即移除。常驻 transition 会干扰滚动入场 / 路由动画，故不放在全局。
+ */
+const TRANSITION_CLASS = "theme-transition";
+const TRANSITION_MS = 260;
+let transitionTimer: ReturnType<typeof setTimeout> | undefined;
+
+function withThemeTransition() {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.classList.add(TRANSITION_CLASS);
+  clearTimeout(transitionTimer);
+  transitionTimer = setTimeout(() => {
+    root.classList.remove(TRANSITION_CLASS);
+  }, TRANSITION_MS);
+}
+
 /** 手动指定主题（持久化，之后不再跟随系统） */
 export function setTheme(mode: ThemeMode) {
+  withThemeTransition();
   applyTheme(mode);
   try {
     localStorage.setItem(STORAGE_KEY, mode);

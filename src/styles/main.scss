@@ -7,12 +7,14 @@
 //   3. 本文件全局基础   —— 少量可访问性与滚动条等补充
 //   4. _markdown        —— 正文排版（markdown-body / shiki / admonition）
 //   5. _blog            —— 博客功能层（列表 / 文章 / 归档 / 番剧 …）
+//   6. _icons           —— Material Symbols 图标字体（子集，自托管）
 // ============================================================
 
 @use "./template";
 @use "./tokens-extra";
 @use "./markdown";
 @use "./blog";
+@use "./icons";
 
 /* ---------- 全局基础补充（模板未覆盖的部分） ---------- */
 html {
@@ -37,4 +39,24 @@ html {
 // 顶栏内链接不显示下划线（模板 a 为 no-decoration，这里保持一致性）
 .app-bar a:hover {
   text-decoration: none;
+}
+
+/*
+  亮暗主题切换过渡：仅在切换瞬间由 theme.ts 挂 .theme-transition 生效
+  （约 260ms 后移除）。常驻 transition 会干扰滚动入场与路由动画。
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition:
+      background-color var(--md-sys-motion-duration-medium)
+        var(--md-sys-motion-easing-standard),
+      border-color var(--md-sys-motion-duration-medium)
+        var(--md-sys-motion-easing-standard),
+      color var(--md-sys-motion-duration-medium)
+        var(--md-sys-motion-easing-standard) !important;
+    transition-delay: 0 !important;
+  }
 }
