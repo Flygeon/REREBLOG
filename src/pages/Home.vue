@@ -118,7 +118,7 @@ const pagePosts = computed(() =>
 .home__hero {
   position: relative;
   height: var(--home-hero-h);
-  border-radius: var(--md-sys-shape-corner-extra-large);
+  border-radius: var(--md-sys-shape-corner-large);
   overflow: hidden;
   box-shadow: var(--md-sys-elevation-2);
 }

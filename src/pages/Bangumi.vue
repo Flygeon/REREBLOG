@@ -4,11 +4,10 @@
       <div class="eyebrow">Bangumi</div>
       <h1 class="section-title">番剧</h1>
       <p class="section-sub">
-        我的 Bangumi 追番收藏。首屏由构建期快照静态渲染，访问时自动同步最新数据，封面经站内 R2 镜像加速。
+        整理我在 Bangumi 上的追番收藏：想看、在看和看过的番剧，以及我的评分与短评。
       </p>
     </header>
 
-    <!-- 均分（快照数据随构建更新，后台刷新后自动重算） -->
     <div v-if="items.length" class="bangumi__source-row">
       <div class="bangumi__source-card bangumi__source-card--static">
         <span class="bangumi__source-icon">
@@ -88,7 +87,7 @@ import snapshot from "@/data/bangumi.json";
 setHead({
   title: "番剧收藏 - 我的 Bangumi 追番列表 | Flygeonの小站",
   description:
-    "Flygeon 在 Bangumi 的番剧收藏簿：想看、在看、看过的动画与评分一览。首屏静态秒开，数据自动同步，封面经站内镜像加速。",
+    "Flygeon 在 Bangumi 的番剧收藏簿：想看、在看、看过的动画与评分一览。",
 });
 
 const BANGUMI_USERNAME = "1250652";
