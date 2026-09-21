@@ -6,6 +6,8 @@
   <header class="app-bar lm-glass" :class="{ 'is-scrolled': scrolled }">
     <div class="container app-bar__inner">
       <RouterLink class="brand app-bar__brand" to="/">
+        <!-- 品牌区只用文字站名，不放图标（logo.png 是 480×127 横版图，
+             不适合方形位；用户明确要求顶栏不出现图标） -->
         <span class="brand__name">{{ siteConfig.title }}</span>
       </RouterLink>
 

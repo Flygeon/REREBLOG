@@ -1,7 +1,10 @@
 <template>
   <article
     class="post-card"
-    :class="{ 'post-card--pinned': pinned }"
+    :class="{
+      'post-card--pinned': pinned,
+      'post-card--plain': !image,
+    }"
     v-reveal
   >
     <!-- 封面（如有） -->
@@ -70,6 +73,15 @@
         <span>{{ minuteLabel }}</span>
       </div>
     </div>
+
+    <!--
+      无封面时的右侧装饰条（对齐 Fuwari 的封面占位设计）：
+      52px 宽、撑满卡片高度，垂直居中一个箭头，hover 时整条浮起。
+      纯装饰元素，故 aria-hidden 且不参与指针事件（hover 仍由 .post-card 承载）。
+    -->
+    <span v-if="!image" class="post-card__rail" aria-hidden="true">
+      <AppIcon name="arrow_forward" :size="24" />
+    </span>
   </article>
 </template>
 

@@ -16,13 +16,14 @@
           v-for="link in profile.links"
           :key="link.url"
           v-ripple
-          class="side-chip"
+          class="side-profile__link"
           :href="link.url"
           target="_blank"
           rel="noopener"
           :title="link.name"
+          :aria-label="link.name"
         >
-          {{ link.name }}
+          <BrandIcon :name="link.icon" :size="20" />
         </a>
       </div>
     </section>
@@ -105,6 +106,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
+import BrandIcon from "@components/BrandIcon.vue";
 import { profileConfig } from "@/config";
 import { allPosts } from "@lib/posts";
 import { getCategoryList, getTagList } from "@utils/content-utils";

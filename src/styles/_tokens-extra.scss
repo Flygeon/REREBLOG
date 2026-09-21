@@ -20,11 +20,31 @@
     Consolas, "Liberation Mono", monospace;
 
   /* ---- 布局度量 ---- */
-  --md-layout-content-max: 880px; // 正文阅读列宽
+  // 正文阅读列宽：中文舒适区间约 40-46 字/行（16px 字号 ≈ 720px），
+  // 原 880px 在双栏下实际约 54 字/行，明显偏宽
+  --md-layout-content-max: 720px;
   --md-layout-shell-max: var(--ll-maxw); // 页面外壳宽度（与模板容器一致）
   --md-layout-sidebar-w: 20rem; // 右侧信息栏
   --md-layout-gutter: var(--lm-content-pad);
   --md-layout-header-h: 64px; // 与模板 .app-bar 高度一致
+
+  /* ---- 页面底板 / 卡片（博客层统一卡片口径） ----
+     模板的 surface(#FCFCFC) 与 container-low(#F6F7F9) 只差 6/255，
+     卡片直接躺在同色底板上，整页发平。这里把两者拉开一档：
+       浅色 → 底板 #EAEFF5（指定的 RGB 234/239/245），卡片纯白 #FFFFFF
+       暗色 → 底板 background(#0F0F11)，卡片 container(#1A1C1E)
+       （M3 暗色色阶越「高」越亮，方向与浅色相反）
+     博客层的卡片统一引用这三条，不再各自写背景/描边。 */
+  --site-surface: #eaeff5;
+  --site-card: var(--md-sys-color-surface-container-lowest);
+  --site-card-border: color-mix(
+    in srgb,
+    var(--md-sys-color-outline-variant) 55%,
+    transparent
+  );
+  // 模板 --md-elevation-1/2 的 alpha 是 0.2，落在白卡上发脏，这里给一套更柔和的
+  --site-elev-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --site-elev-2: 0 2px 6px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08);
 
   /* ---- 排版阶梯：补齐模板落地页未用到的两级 headline ---- */
   --md-sys-typescale-headline-large-size: 30px;
@@ -139,4 +159,15 @@
     var(--md-sys-color-primary) 20%,
     transparent
   );
+
+  /* 暗色卡片口径：底板保持 background，卡片取更高一档的 container */
+  --site-surface: var(--md-sys-color-background);
+  --site-card: var(--md-sys-color-surface-container);
+  --site-card-border: color-mix(
+    in srgb,
+    var(--md-sys-color-outline-variant) 75%,
+    transparent
+  );
+  --site-elev-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --site-elev-2: 0 2px 8px rgba(0, 0, 0, 0.45);
 }

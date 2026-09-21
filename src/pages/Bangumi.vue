@@ -2,25 +2,17 @@
   <div class="container">
     <header class="page__header">
       <div class="eyebrow">Bangumi</div>
-      <h1 class="section-title">番剧</h1>
+      <h1 class="section-title">
+        番剧
+        <span v-if="items.length" class="page__meta">
+          <AppIcon name="star" :size="16" />
+          均分 {{ scoreLabel }}
+        </span>
+      </h1>
       <p class="section-sub">
         整理我在 Bangumi 上的追番收藏：想看、在看和看过的番剧，以及我的评分与短评。
       </p>
     </header>
-
-    <div v-if="items.length" class="bangumi__source-row">
-      <div class="bangumi__source-card bangumi__source-card--static">
-        <span class="bangumi__source-icon">
-          <AppIcon name="star" :size="22" />
-        </span>
-        <span>
-          <span class="bangumi__source-label">Bangumi 均分</span>
-          <span class="bangumi__source-name">
-            {{ averageScore.toFixed(1) }}
-          </span>
-        </span>
-      </div>
-    </div>
 
     <!-- 状态筛选（Varlet tabs） -->
     <div v-if="items.length" class="bangumi__tabs">
@@ -151,6 +143,11 @@ const averageScore = computed(() => {
   if (!scored.length) return 0;
   return scored.reduce((sum, i) => sum + i.score, 0) / scored.length;
 });
+
+/** 均分展示值：当前筛选下没有评分条目时显示占位符 */
+const scoreLabel = computed(() =>
+  averageScore.value > 0 ? averageScore.value.toFixed(1) : "—",
+);
 
 function statusLabel(type: number): string {
   return STATUS_LABELS[type] ?? "未知";

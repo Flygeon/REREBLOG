@@ -47,6 +47,12 @@
   text-decoration: underline;
 }
 
+/* 页脚小标题：同样是中文（"导航 Navigation"），去掉对中文无效的 uppercase 与字距 */
+.footer h5 {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* 双栏：主内容 + 右侧信息栏 */
 .blog-grid {
   --home-hero-h: clamp(240px, 36vh, 360px);
@@ -71,10 +77,29 @@
 }
 
 /* ---------- 文章卡片 ---------- */
+/* 列表标题行：替代原先孤立在 Hero 与列表之间的「27 篇文章」居中计数块 */
+.post-list__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 14px;
+}
+.post-list__title {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+.post-list__count {
+  font-size: var(--md-sys-typescale-label-large-size);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
 .post-list {
   display: flex;
   flex-direction: column;
-  gap: var(--ll-gap);
+  /* 卡片间距比卡内间距（20px）大一档，维持「内紧外松」的分组关系 */
+  gap: 28px;
 }
 /*
   列表错峰入场：PostCard 已带 v-reveal（模板 .reveal / .reveal.is-visible），
@@ -95,12 +120,14 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 24px 26px;
-  background: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--lm-hairline);
-  /* 文章卡圆角：MD3 large(16px) 下调一档至 medium(12px) */
-  border-radius: var(--md-sys-shape-corner-medium);
+  // 只管「封面 ↔ 内容区」之间的间距；内容区内部的间距在 .post-card__body 上
+  gap: 20px;
+  padding: 26px 28px;
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
+  /* 卡片圆角统一 16px（外层卡 large / 卡内块 medium / chip 全圆） */
+  border-radius: var(--md-sys-shape-corner-large);
   transition: transform var(--md-sys-motion-duration-medium)
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium)
@@ -124,13 +151,23 @@
 }
 .post-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--md-elevation-2);
+  box-shadow: var(--site-elev-2);
 }
 .post-card:hover::before {
   opacity: 0.08;
 }
 .post-card--pinned {
   border-left: 3px solid var(--md-sys-color-primary);
+}
+/*
+  卡片内容区：标题 / 日期 / 描述 / 标签 / 字数 全都装在这一层。
+  卡内间距必须由它的 gap 控制 —— 加在 .post-card 上是无效的，
+  因为卡片的直接子元素只有「封面」和「内容区」两个。
+*/
+.post-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .post-card__title-row {
   display: flex;
@@ -248,6 +285,61 @@
   transform: translateY(-50%) translateX(0);
 }
 
+/*
+  无封面文章卡的右侧装饰条（对齐 Fuwari 的封面占位设计）：
+  52px 宽，高度由 top/bottom:0 撑满卡片内框 —— 卡片多高它多高，自适应；
+  常态即呈现淡蓝底 + 主色箭头，hover 时底色加深。
+  有封面时该位置由 .post-card__cover 占据，组件里不会渲染这条。
+*/
+.post-card__rail {
+  position: absolute;
+  /* 上 / 右 / 下三侧留出等间距（12px），做成浮起的小块；
+     贴满整条边会显得很生硬 */
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1;
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 已脱离卡片边缘，四角统一圆角 */
+  border-radius: var(--md-sys-shape-corner-medium);
+  /* 常态底色：指定的 RGB(226,240,255) */
+  background: #e2f0ff;
+  color: var(--md-sys-color-primary);
+  /* 纯装饰：不接收指针事件，hover 统一由 .post-card 触发 */
+  pointer-events: none;
+  transition: background var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+/* hover：在常态底色上按主色加深，保持同一色系 */
+.post-card:hover .post-card__rail {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 14%, #e2f0ff);
+}
+/*
+  暗色主题：#E2F0FF 在深色卡片上是刺眼的亮块，
+  换成主色半透明铺底（叠在卡片底色上，自动跟随主题）。
+*/
+[data-theme="dark"] .post-card__rail {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 22%, transparent);
+}
+[data-theme="dark"] .post-card:hover .post-card__rail {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 34%, transparent);
+}
+/* 无封面时给文字内容让出装饰条的宽度（右内边距 28px + 装饰条 52px） */
+.post-card--plain {
+  padding-right: 80px;
+}
+@media (max-width: 600px) {
+  .post-card--plain {
+    padding-right: 68px;
+  }
+  .post-card__rail {
+    width: 44px;
+  }
+}
+
 .post-list__empty,
 .state-block {
   padding: 48px 0;
@@ -262,41 +354,36 @@
   gap: 16px;
 }
 .side-card {
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--lm-hairline);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
   border-radius: var(--md-sys-shape-corner-large);
   padding: 22px;
 }
+/* 侧栏小标题：中文不用 uppercase / letter-spacing（对中文无效且会撑开字距） */
 .side-card__title {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
-  font-size: var(--md-sys-typescale-title-small-size);
-  font-weight: var(--md-sys-typescale-title-small-weight);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--md-sys-color-primary);
 }
 .side-profile {
   text-align: center;
 }
 /*
-  首页首屏：侧栏站长卡与左侧 Hero 横幅卡片等高对齐。
-  高度表达式与 Home.vue 的 .home__hero 完全一致，两列顶部与底部齐平。
+  首页首屏站长卡：不再强制与左侧 Hero 等高。
+  卡片内容量固定（头像 / 名字 / 简介 / 链接），撑不满 Hero 高度时
+  会在卡内留下上下各 ~60px 的空白，改为高度自适应、内容贴合。
 */
 .side-card--hero {
-  height: var(--home-hero-h);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow: hidden;
 }
-/* 等高卡内收紧：头像缩小、简介限两行，保证最小高度下也不溢出 */
-.side-card--hero .side-profile__avatar {
-  width: 72px;
-  height: 72px;
-}
+/* 首屏站长卡：简介限两行，避免长简介把卡片撑高 */
 .side-card--hero .side-profile__bio {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -306,12 +393,7 @@
 .side-card--hero .side-profile__links {
   margin-top: 12px;
 }
-/* 窄屏取消等高（侧栏已堆叠到主内容下方，再等高没有意义） */
-@media (max-width: 1080px) {
-  .side-card--hero {
-    height: auto;
-  }
-}
+/* 头像：卡片不再与 Hero 强制等高后，用基础尺寸（96px）即可，不再单独缩小 */
 .side-profile__avatar {
   width: 96px;
   height: 96px;
@@ -338,6 +420,41 @@
   gap: 8px;
   justify-content: center;
   margin-top: 16px;
+}
+/* 站长社交链接：图标按钮（40px 圆角矩形，MD3 state layer 反馈） */
+.side-profile__link {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  /* 圆角矩形（卡内嵌套块统一 12px），不用全圆 */
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--site-card-border);
+  color: var(--md-sys-color-on-surface-variant);
+  transition: color var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.side-profile__link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.side-profile__link:hover {
+  color: var(--md-sys-color-primary);
+}
+.side-profile__link:hover::before {
+  opacity: 0.08;
 }
 .side-chips {
   display: flex;
@@ -462,6 +579,13 @@
 .post__header {
   padding: 56px 0 24px;
 }
+/* 文章页 eyebrow 展示的是中文分类名：去掉对中文无效的 uppercase 与字距 */
+.post__header .eyebrow {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
 .post__title {
   font-size: var(--md-sys-typescale-headline-size);
   font-weight: var(--md-sys-typescale-headline-weight);
@@ -476,16 +600,30 @@
   margin-top: 16px;
   font-size: var(--md-sys-typescale-body-medium-size);
   color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
 }
-.post__category {
-  color: var(--md-sys-color-primary);
-  font-weight: 600;
+/* 标签行：独立一行 chip，与列表页文章卡的标签样式保持一致 */
+.post__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
 }
 .post__tag {
+  padding: 4px 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--site-card-border);
   color: var(--md-sys-color-primary);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: 500;
+  transition: background var(--md-sys-motion-duration-short),
+    color var(--md-sys-motion-duration-short);
 }
 .post__tag:hover {
-  text-decoration: underline;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  text-decoration: none;
 }
 .post__content {
   max-width: var(--md-layout-content-max);
@@ -511,10 +649,12 @@
   gap: 6px;
   padding: 18px 20px;
   border-radius: var(--ll-radius-tile);
-  border: 1px solid var(--lm-hairline);
-  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--site-card-border);
+  background: var(--site-card);
+  box-shadow: var(--site-elev-1);
   transition: transform var(--md-sys-motion-duration-medium)
-    var(--md-sys-motion-easing-standard);
+      var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-medium);
 }
 /* MD3 state layer */
 .post__pager-link::before {
@@ -531,6 +671,7 @@
 }
 .post__pager-link:hover {
   transform: translateY(-2px);
+  box-shadow: var(--site-elev-2);
 }
 .post__pager-link:hover::before {
   opacity: 0.08;
@@ -576,10 +717,11 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--lm-hairline);
-  /* 相关文章卡：与 .post-card 保持一致，MD3 medium(12px) */
-  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
+  /* 相关文章卡：与 .post-card 保持一致，外层卡 16px */
+  border-radius: var(--md-sys-shape-corner-large);
   transition: transform var(--md-sys-motion-duration-medium)
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium);
@@ -598,7 +740,7 @@
 }
 .rec-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--md-elevation-2);
+  box-shadow: var(--site-elev-2);
 }
 .rec-card:hover::before {
   opacity: 0.08;
@@ -754,7 +896,7 @@
   height: 52px;
   border-radius: var(--md-sys-shape-corner-large);
   border: 1px solid var(--md-sys-color-outline-variant);
-  background: var(--md-sys-color-surface-container-low);
+  background: var(--site-card);
   transition: border-color var(--md-sys-motion-duration-short);
 }
 .search__box:focus-within {
@@ -852,8 +994,9 @@
   align-items: center;
   gap: 14px;
   padding: 18px 20px;
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--lm-hairline);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
   border-radius: var(--md-sys-shape-corner-large);
   transition: transform var(--md-sys-motion-duration-medium)
       var(--md-sys-motion-easing-standard),
@@ -873,7 +1016,7 @@
 }
 .friend-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--md-elevation-2);
+  box-shadow: var(--site-elev-2);
 }
 .friend-card:hover::before {
   opacity: 0.08;
@@ -908,65 +1051,11 @@
 }
 
 /* ---------- 番剧 ---------- */
-.bangumi__source-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 8px 0 20px;
-}
-.bangumi__source-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: var(--ll-radius-tile);
-  border: 1px solid var(--lm-hairline);
-  background: var(--md-sys-color-surface-container-low);
-  color: var(--md-sys-color-on-surface);
-  font-family: inherit;
-  cursor: pointer;
-  transition: background var(--md-sys-motion-duration-short),
-    border-color var(--md-sys-motion-duration-short);
-}
-.bangumi__source-card:hover {
-  background: var(--md-sys-color-surface-container-high);
-}
-.bangumi__source-card--active {
-  border-color: var(--md-sys-color-primary);
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-}
-.bangumi__source-card--static {
-  cursor: default;
-}
-.bangumi__source-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--md-sys-shape-corner-large);
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-}
-.bangumi__source-card--active .bangumi__source-icon {
-  background: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-}
-.bangumi__source-label {
-  display: block;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
-.bangumi__source-name {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-}
+/* 原 .bangumi__source-* 一组（数据源切换卡片）已移除：
+   页面只有一个 Bangumi 数据源，均分改由 .page__meta 胶囊承载 */
 .bangumi__tabs {
-  margin-bottom: 20px;
+  /* 均分并入 page__header 后，这里补出与页面头部之间的间距 */
+  margin: 20px 0;
 }
 .bangumi__tab-count {
   margin-left: 6px;
@@ -988,8 +1077,9 @@
   display: block;
   border-radius: var(--ll-radius-tile);
   overflow: hidden;
-  background: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--lm-hairline);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
   transition: transform var(--md-sys-motion-duration-medium)
       var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium);
@@ -1007,7 +1097,7 @@
 }
 .bangumi__card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--md-elevation-2);
+  box-shadow: var(--site-elev-2);
 }
 .bangumi__card:hover::before {
   opacity: 0.08;
@@ -1022,17 +1112,25 @@
   height: 100%;
   object-fit: cover;
 }
+/*
+  评分徽标：原用 --lm-scrim-surface（近白 72% 透明）+ 主色字，
+  在白底海报（如「四月是你的谎言」）上几乎完全看不见。
+  改为深色 scrim + 白字 + 细白描边，对任意海报底色都成立。
+*/
 .bangumi__card-score {
   position: absolute;
   right: 8px;
   top: 8px;
   padding: 2px 8px;
   border-radius: var(--md-sys-shape-corner-full);
-  background: var(--lm-scrim-surface);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   font-size: 11px;
   font-weight: 700;
-  color: var(--md-sys-color-primary);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 .bangumi__card-info {
   padding: 10px 12px 12px;
@@ -1092,8 +1190,9 @@
   display: flex;
   gap: 14px;
   padding: 20px 22px;
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--lm-hairline);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
   border-radius: var(--md-sys-shape-corner-large);
 }
 .memo-card__avatar img {

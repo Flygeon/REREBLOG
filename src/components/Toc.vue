@@ -82,9 +82,11 @@ onUnmounted(() => {
 
 <style scoped>
 .toc {
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--lm-hairline);
-  border-radius: var(--ll-radius-card);
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
+  /* 外层卡片统一 16px（原为 --ll-radius-card = 28px，与全站卡片不一致） */
+  border-radius: var(--md-sys-shape-corner-large);
   padding: 18px 16px;
 }
 .toc__head {
@@ -93,10 +95,9 @@ onUnmounted(() => {
   gap: 8px;
   margin-bottom: 12px;
   color: var(--md-sys-color-primary);
-  font-size: var(--md-sys-typescale-title-small-size);
-  font-weight: var(--md-sys-typescale-title-small-weight);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  /* 中文标题：不用 uppercase / letter-spacing */
+  font-size: 13px;
+  font-weight: 600;
 }
 .toc__list {
   list-style: none;

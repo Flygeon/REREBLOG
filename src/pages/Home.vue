@@ -20,10 +20,10 @@
           </div>
         </section>
 
-        <!-- 文章计数 -->
-        <div class="home__count" aria-hidden="true">
-          <span class="home__count-num">{{ allPosts.length }}</span>
-          <span class="home__count-label">篇文章</span>
+        <!-- 文章列表标题行（含总数） -->
+        <div class="post-list__head">
+          <h2 class="post-list__title">最新文章</h2>
+          <span class="post-list__count">共 {{ allPosts.length }} 篇</span>
         </div>
 
         <section class="post-list" aria-label="文章列表">
@@ -193,24 +193,5 @@ const pagePosts = computed(() =>
   .home__cursor {
     animation: none;
   }
-}
-
-/* 文章计数（MD3 风格：小徽章） */
-.home__count {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.35rem;
-  margin: 1.5rem 0 1.75rem;
-}
-.home__count-num {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--md-sys-color-primary);
-  font-variant-numeric: tabular-nums;
-}
-.home__count-label {
-  font-size: 0.8rem;
-  color: var(--md-sys-color-on-surface-variant);
 }
 </style>

@@ -7,7 +7,7 @@
       <!-- 双栏布局：主内容 + 右侧 TOC -->
       <div class="post-layout">
         <div class="post__main">
-          <!-- 文章头 -->
+          <!-- 文章头：栏目(eyebrow) → 标题 → 日期/字数 → 标签行 -->
           <header class="post__header">
             <div class="eyebrow">{{ post.data.category || "未分类" }}</div>
             <h1 class="post__title">{{ post.data.title }}</h1>
@@ -15,26 +15,21 @@
               <span class="post__date">
                 {{ formatDate(post.data.published) }}
               </span>
-              <template v-if="post.data.category">
+              <template v-if="statsLabel">
                 <span class="post__sep">·</span>
-                <a
-                  class="post__category"
-                  :href="getCategoryUrl(post.data.category)"
-                >
-                  {{ post.data.category }}
-                </a>
+                <span class="post__stats">{{ statsLabel }}</span>
               </template>
-              <template v-if="post.data.tags && post.data.tags.length">
-                <span class="post__sep">·</span>
-                <span class="post__tags">
-                  <a
-                    v-for="tag in post.data.tags"
-                    :key="tag"
-                    class="post__tag"
-                    :href="getTagUrl(tag)"
-                  >#{{ tag.trim() }}</a>
-                </span>
-              </template>
+            </div>
+            <div
+              v-if="post.data.tags && post.data.tags.length"
+              class="post__tags"
+            >
+              <a
+                v-for="tag in post.data.tags"
+                :key="tag"
+                class="post__tag"
+                :href="getTagUrl(tag)"
+              >#{{ tag.trim() }}</a>
             </div>
           </header>
 
@@ -179,7 +174,7 @@ import Giscus from "@components/Giscus.vue";
 import Toc, { type TocHeading } from "@components/Toc.vue";
 import ScrollProgress from "@components/ScrollProgress.vue";
 import { allPosts, getPostBody, getPostHtml, mdToText } from "@lib/posts";
-import { getCategoryUrl, getTagUrl, toRouterLink } from "@utils/url-utils";
+import { getTagUrl, toRouterLink } from "@utils/url-utils";
 import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
 
@@ -222,6 +217,13 @@ const slug = computed(() =>
   String(route.params.slug ?? "").replace(/\/+$/, ""),
 );
 const post = computed(() => allPosts.find((p) => p.slug === slug.value));
+
+/** 文章头的时间信息（字数 / 预计阅读时长，来自构建期统计） */
+const statsLabel = computed(() => {
+  const s = post.value?.stats;
+  if (!s) return "";
+  return `${s.words} 字 · 约 ${s.minutes} 分钟`;
+});
 
 const recommended = computed(() =>
   post.value ? getRecommendedPosts(post.value, allPosts, 3) : [],
@@ -293,7 +295,7 @@ if (post.value) {
 <style scoped>
 .post-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: var(--ll-gap);
   align-items: start;
   padding-bottom: 40px;

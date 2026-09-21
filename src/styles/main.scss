@@ -22,6 +22,15 @@ html {
   overflow-y: scroll;
 }
 
+/*
+  页面底板下移一档（模板 body 用的是 surface #FCFCFC）：
+  与博客层的卡片底色（--site-card）拉开明度差，卡片才有「浮在底板上」的层级。
+  与 .post-list > .reveal 同一手法 —— 同等特异性、加载在后即可覆盖，不动模板。
+*/
+body {
+  background: var(--site-surface);
+}
+
 // 聚焦可见性（可访问性）
 :focus-visible {
   outline: 2px solid var(--md-sys-color-primary);
@@ -31,7 +40,6 @@ html {
 // 正文链接默认沿用主色（模板落地页为 inherit，博客正文需要可辨识链接）
 .markdown-body a,
 .page__ext,
-.post__category,
 .post__tag {
   color: var(--md-sys-color-primary);
 }

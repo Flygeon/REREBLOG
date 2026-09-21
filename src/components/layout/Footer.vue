@@ -5,9 +5,9 @@
       <div class="footer__grid">
         <div class="footer__brand">
           <RouterLink class="brand" to="/">
+            <!-- 与顶栏一致：品牌区只用文字站名，不放图标 -->
             <span class="brand__name">{{ siteConfig.title }}</span>
           </RouterLink>
-          <p>{{ footerIntro }}</p>
         </div>
 
         <div>
@@ -33,10 +33,6 @@
       </div>
 
       <div class="footer__bottom">
-        <span>
-          © {{ year }} {{ profileConfig.name }} · 基于 Vue 3 + Vite 自建 SSG 与
-          Material Design 3 构建
-        </span>
         <a
           v-if="licenseConfig.enable"
           class="badge-lic"
@@ -55,8 +51,6 @@
 import { computed } from "vue";
 import { licenseConfig, profileConfig, siteConfig } from "@/config";
 
-const year = new Date().getFullYear();
-
 const navLinks = [
   { to: "/", label: "首页" },
   { to: "/archive", label: "归档" },
@@ -67,9 +61,6 @@ const navLinks = [
 
 /** 站长社交链接（来自 profileConfig） */
 const profileLinks = computed(() => profileConfig.links ?? []);
-
-const footerIntro =
-  "记录 Web 开发与自建项目的个人博客：Vue 3 自建 SSG、Cloudflare Workers 动态服务，也收录 Bangumi 追番与日常碎碎念。";
 </script>
 
 <style scoped>
@@ -77,9 +68,9 @@ const footerIntro =
   margin: 0;
   text-decoration: none;
 }
-.footer__brand p {
-  margin-top: 14px;
-  max-width: 320px;
+/* 页脚底部只剩许可徽标：靠右对齐，避免 space-between 把它推到最左 */
+.footer__bottom {
+  justify-content: flex-end;
 }
 .badge-lic {
   text-decoration: none;
