@@ -14,7 +14,7 @@
       :to="toLink(url)"
       :aria-label="title"
     >
-      <img :src="resolveImage(image)" :alt="title" loading="lazy" />
+      <img :src="resolveImage(image)" :alt="title" loading="lazy" decoding="async" />
       <span class="post-card__cover-overlay"></span>
       <AppIcon class="post-card__enter" name="arrow_forward" :size="26" />
     </RouterLink>
@@ -75,13 +75,18 @@
     </div>
 
     <!--
-      无封面时的右侧装饰条（对齐 Fuwari 的封面占位设计）：
+      无封面时的右侧箭头条（对齐 Fuwari 的封面占位设计）：
       52px 宽、撑满卡片高度，垂直居中一个箭头，hover 时整条浮起。
-      纯装饰元素，故 aria-hidden 且不参与指针事件（hover 仍由 .post-card 承载）。
+      是真实的文章链接（与标题同目标），可点击 / 可聚焦。
     -->
-    <span v-if="!image" class="post-card__rail" aria-hidden="true">
+    <RouterLink
+      v-if="!image"
+      class="post-card__rail"
+      :to="toLink(url)"
+      :aria-label="`阅读文章：${title}`"
+    >
       <AppIcon name="arrow_forward" :size="24" />
-    </span>
+    </RouterLink>
   </article>
 </template>
 

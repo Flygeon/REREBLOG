@@ -308,10 +308,17 @@
   /* 常态底色：指定的 RGB(226,240,255) */
   background: #e2f0ff;
   color: var(--md-sys-color-primary);
-  /* 纯装饰：不接收指针事件，hover 统一由 .post-card 触发 */
-  pointer-events: none;
+  /* 真实链接：可点击 / 可聚焦，hover 效果同时由自身与 .post-card 触发 */
+  pointer-events: auto;
+  text-decoration: none;
   transition: background var(--md-sys-motion-duration-short)
     var(--md-sys-motion-easing-standard);
+}
+/* 键盘聚焦时与 hover 同款加深，保证可达性 */
+.post-card__rail:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 14%, #e2f0ff);
 }
 /* hover：在常态底色上按主色加深，保持同一色系 */
 .post-card:hover .post-card__rail {
@@ -652,9 +659,9 @@
   border: 1px solid var(--site-card-border);
   background: var(--site-card);
   box-shadow: var(--site-elev-1);
-  transition: transform var(--md-sys-motion-duration-medium)
+  transition: transform var(--md-sys-motion-duration-short)
       var(--md-sys-motion-easing-standard),
-    box-shadow var(--md-sys-motion-duration-medium);
+    box-shadow var(--md-sys-motion-duration-short);
 }
 /* MD3 state layer */
 .post__pager-link::before {
@@ -722,9 +729,9 @@
   box-shadow: var(--site-elev-1);
   /* 相关文章卡：与 .post-card 保持一致，外层卡 16px */
   border-radius: var(--md-sys-shape-corner-large);
-  transition: transform var(--md-sys-motion-duration-medium)
+  transition: transform var(--md-sys-motion-duration-short)
       var(--md-sys-motion-easing-standard),
-    box-shadow var(--md-sys-motion-duration-medium);
+    box-shadow var(--md-sys-motion-duration-short);
 }
 /* MD3 state layer：hover 用 on-surface 8% 叠加，亮暗自适应 */
 .rec-card::before {
@@ -998,9 +1005,9 @@
   border: 1px solid var(--site-card-border);
   box-shadow: var(--site-elev-1);
   border-radius: var(--md-sys-shape-corner-large);
-  transition: transform var(--md-sys-motion-duration-medium)
+  transition: transform var(--md-sys-motion-duration-short)
       var(--md-sys-motion-easing-standard),
-    box-shadow var(--md-sys-motion-duration-medium);
+    box-shadow var(--md-sys-motion-duration-short);
 }
 .friend-card::before {
   content: "";
@@ -1080,9 +1087,9 @@
   background: var(--site-card);
   border: 1px solid var(--site-card-border);
   box-shadow: var(--site-elev-1);
-  transition: transform var(--md-sys-motion-duration-medium)
+  transition: transform var(--md-sys-motion-duration-short)
       var(--md-sys-motion-easing-standard),
-    box-shadow var(--md-sys-motion-duration-medium);
+    box-shadow var(--md-sys-motion-duration-short);
 }
 .bangumi__card::before {
   content: "";
@@ -1327,5 +1334,55 @@
 @media (prefers-reduced-motion: reduce) {
   .ripple-ink {
     display: none;
+  }
+}
+
+/* =====================================================================
+   移动端导航抽屉：覆盖模板的 display:none↔flex 硬切换
+   模板 .nav 在 <=720px 时是 display:none（关闭）/ display:flex（打开），
+   无法做过渡。这里把抽屉在移动端始终 display:flex（布局靠 absolute 不占文档流），
+   用 opacity/visibility/transform 折叠可见性，从而平滑淡入 + 下落。
+   桌面端（>720px）完全不受影响。
+   ===================================================================== */
+@media (max-width: 720px) {
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    padding: 12px var(--lm-content-pad) 18px;
+    background: var(--md-sys-color-surface-container-lowest);
+    border-bottom: 1px solid var(--lm-hairline);
+    box-shadow: var(--md-elevation-2);
+    /* 关闭态：可见性折叠，但 absolute 不占布局 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transform-origin: top;
+    transition:
+      opacity var(--md-sys-motion-duration-short)
+        var(--md-sys-motion-easing-standard),
+      transform var(--md-sys-motion-duration-short)
+        var(--md-sys-motion-easing-standard),
+      visibility 0s linear var(--md-sys-motion-duration-short);
+  }
+  .nav.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    /* 打开时立即可见；关闭时 visibility 延迟到淡出结束再隐藏（见上方 base） */
+    transition-delay: 0s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav,
+    .nav.is-open {
+      transition: none;
+    }
   }
 }

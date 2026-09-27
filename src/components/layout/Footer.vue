@@ -8,6 +8,7 @@
             <!-- 与顶栏一致：品牌区只用文字站名，不放图标 -->
             <span class="brand__name">{{ siteConfig.title }}</span>
           </RouterLink>
+          <p v-if="tagline" class="footer__tagline">{{ tagline }}</p>
         </div>
 
         <div>
@@ -33,6 +34,9 @@
       </div>
 
       <div class="footer__bottom">
+        <p class="footer__copy">
+          © {{ year }} {{ siteConfig.title }} · Built with Vue 3 + Vite
+        </p>
         <a
           v-if="licenseConfig.enable"
           class="badge-lic"
@@ -61,6 +65,11 @@ const navLinks = [
 
 /** 站长社交链接（来自 profileConfig） */
 const profileLinks = computed(() => profileConfig.links ?? []);
+
+/** 品牌区标语：优先用首页横幅副标题，退到站长签名 */
+const tagline = siteConfig.banner?.subtitle?.text || profileConfig.bio || "";
+
+const year = new Date().getFullYear();
 </script>
 
 <style scoped>
@@ -68,9 +77,20 @@ const profileLinks = computed(() => profileConfig.links ?? []);
   margin: 0;
   text-decoration: none;
 }
-/* 页脚底部只剩许可徽标：靠右对齐，避免 space-between 把它推到最左 */
+.footer__tagline {
+  margin-top: 12px;
+  max-width: 34ch;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 14px;
+  line-height: 1.7;
+}
+/* 底栏：左侧版权、右侧许可徽标（改写为两端对齐，避免左侧空一大片） */
 .footer__bottom {
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer__copy {
+  margin: 0;
 }
 .badge-lic {
   text-decoration: none;

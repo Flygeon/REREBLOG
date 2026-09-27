@@ -8,7 +8,16 @@ export interface HeadInfo {
 	title?: string;
 	description?: string;
 	jsonLd?: object | object[];
+	/** 分享缩略图：站内相对路径或完整 URL（SSG 会补成绝对地址） */
+	image?: string;
+	/** 页面规范地址（相对路径即可，SSG 补成绝对地址） */
+	url?: string;
+	/** og:type，文章页传 "article"，其余默认 "website" */
+	type?: "website" | "article";
 }
+
+/** 站点绝对地址（sitemap / RSS / OG 共用） */
+export const SITE_URL = "https://flygeon.top";
 
 /** 全站标题后缀（各页面 title 以 | 拼接） */
 export const SITE_TITLE = "Flygeonの小站";

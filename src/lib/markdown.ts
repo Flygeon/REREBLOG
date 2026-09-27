@@ -202,17 +202,23 @@ function escapeHtml(s: string): string {
 		.replace(/"/g, "&quot;");
 }
 
-/** 复刻 rehype-component-github-card：运行时向 api.github.com 拉取仓库信息 */
+/**
+ * 复刻 rehype-component-github-card：输出卡片骨架 + repo 属性，
+ * 具体数据由客户端 `hydrateGithubCards()` 拉取填充。
+ *
+ * 注意：不再内联 <script>。正文经 v-html 注入，SPA 导航时注入的 script
+ * 不会执行（原实现因此在站内跳转时永远卡在 Waiting）；统一交给 hydration。
+ */
 function renderGithubCard(repo: string): string {
 	if (!repo.includes("/")) return "";
-	const uuid = "GC" + Math.random().toString(36).slice(-6);
+	const [owner, name] = repo.split("/");
 	return `
-<a id="${uuid}-card" class="card-github fetch-waiting no-styling" href="https://github.com/${repo}" target="_blank" repo="${repo}">
+<a class="card-github fetch-waiting no-styling" href="https://github.com/${repo}" target="_blank" rel="noopener" repo="${repo}">
   <div class="gc-titlebar">
     <div class="gc-titlebar-left">
-      <div class="gc-owner"><div class="gc-avatar"></div><div class="gc-user">${repo.split("/")[0]}</div></div>
+      <div class="gc-owner"><div class="gc-avatar"></div><div class="gc-user">${escapeHtml(owner)}</div></div>
       <div class="gc-divider">/</div>
-      <div class="gc-repo">${repo.split("/")[1]}</div>
+      <div class="gc-repo">${escapeHtml(name)}</div>
     </div>
     <div class="github-logo"></div>
   </div>
@@ -223,19 +229,6 @@ function renderGithubCard(repo: string): string {
     <span class="gc-license">0K</span>
     <span class="gc-language">Waiting...</span>
   </div>
-  <script type="text/javascript" defer>
-    fetch('https://api.github.com/repos/${repo}', { referrerPolicy: "no-referrer" })
-      .then(r => r.json()).then(data => {
-        document.getElementById('${uuid}-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
-        document.getElementById('${uuid}-language').innerText = data.language;
-        document.getElementById('${uuid}-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll(" ", '');
-        document.getElementById('${uuid}-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll(" ", '');
-        const avatarEl = document.getElementById('${uuid}-avatar');
-        if (avatarEl) { avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')'; avatarEl.style.backgroundColor = 'transparent'; }
-        document.getElementById('${uuid}-license').innerText = data.license?.spdx_id || "no-license";
-        document.getElementById('${uuid}-card').classList.remove("fetch-waiting");
-      }).catch(() => { document.getElementById('${uuid}-card')?.classList.add("fetch-error"); });
-  </script>
 </a>`;
 }
 

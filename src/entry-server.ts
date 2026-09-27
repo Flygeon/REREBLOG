@@ -8,7 +8,7 @@ import { getPrerenderUrls, allPosts, specPages } from "@lib/posts";
 import { prewarmMarkdown, renderMarkdown } from "@lib/markdown";
 import { resetHead, getHead } from "@lib/head";
 
-export { getPrerenderUrls };
+export { getPrerenderUrls, allPosts } from "@lib/posts";
 
 /**
  * 一次性渲染全部文章与 spec 页正文 HTML，

@@ -20,6 +20,25 @@
 html {
   // 始终保留滚动条槽位，避免长短页面切换时内容横移
   overflow-y: scroll;
+  // 滚动条跟随主题着色（原生控件用 color-scheme，这里是细节润色）
+  scrollbar-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface) 28%,
+      transparent
+    )
+    transparent;
+}
+
+/* 排版细节（渐进增强，旧浏览器忽略） */
+:where(h1, h2, h3, .section-title, .post-list__title) {
+  text-wrap: balance;
+}
+:where(.markdown-body p, .post-card__desc) {
+  text-wrap: pretty;
+}
+::selection {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent);
+  color: var(--md-sys-color-on-surface);
 }
 
 /*
@@ -50,21 +69,8 @@ body {
 }
 
 /*
-  亮暗主题切换过渡：仅在切换瞬间由 theme.ts 挂 .theme-transition 生效
-  （约 260ms 后移除）。常驻 transition 会干扰滚动入场与路由动画。
+  亮暗切换动画已整体迁到 src/components/ThemeReveal.vue（motion-v 编排的
+  「拉绳灯泡」：下拉 → 灯态翻转 → 光晕铺满 → 铺满瞬间切主题 → 淡出）。
+  这里不再保留任何 .theme-reveal 全局规则 —— 它会命中组件根元素并注入
+  transform: scale(0)，直接把动画压没。
 */
-@media (prefers-reduced-motion: no-preference) {
-  .theme-transition,
-  .theme-transition *,
-  .theme-transition *::before,
-  .theme-transition *::after {
-    transition:
-      background-color var(--md-sys-motion-duration-medium)
-        var(--md-sys-motion-easing-standard),
-      border-color var(--md-sys-motion-duration-medium)
-        var(--md-sys-motion-easing-standard),
-      color var(--md-sys-motion-duration-medium)
-        var(--md-sys-motion-easing-standard) !important;
-    transition-delay: 0 !important;
-  }
-}

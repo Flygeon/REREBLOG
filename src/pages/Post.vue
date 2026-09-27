@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import AppIcon from "@components/AppIcon.vue";
 import Giscus from "@components/Giscus.vue";
@@ -177,6 +177,7 @@ import { allPosts, getPostBody, getPostHtml, mdToText } from "@lib/posts";
 import { getTagUrl, toRouterLink } from "@utils/url-utils";
 import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
+import { hydrateGithubCards } from "@lib/github-card";
 
 const route = useRoute();
 const toLink = toRouterLink;
@@ -251,6 +252,9 @@ function setPostHead(p: typeof post.value) {
       ? `${p.data.title} · ${import.meta.env.VITE_SITE_TITLE ?? "Flygeonの小站"}`
       : "Flygeonの小站",
     description: p.data.description || excerpt,
+    type: "article",
+    url: `/posts/${p.slug}/`,
+    ...(p.data.image ? { image: p.data.image } : {}),
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
@@ -270,6 +274,7 @@ async function render() {
   if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
+    void nextTick(() => hydrateGithubCards());
   }
   setPostHead(post.value);
 }
@@ -288,6 +293,7 @@ if (post.value) {
   if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
+    void nextTick(() => hydrateGithubCards());
   }
 }
 </script>

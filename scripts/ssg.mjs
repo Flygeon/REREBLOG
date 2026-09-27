@@ -19,6 +19,28 @@ const root = path.resolve(__dirname, "..");
 const distDir = path.join(root, "dist");
 const ssrEntry = path.join(root, "dist-ssr", "entry-server.js");
 
+// 站点绝对地址（与 src/lib/head.ts 的 SITE_URL、sitemap-rss.mjs 保持一致）
+const SITE_URL = "https://flygeon.top";
+const DEFAULT_OG_IMAGE = `${SITE_URL}/favicon/favicon-light-192.png`;
+
+function escapeAttr(s) {
+	return escapeHtml(s).replace(/'/g, "&#39;");
+}
+
+/** 站内相对路径 / 图片路径 → 绝对 URL */
+function absolute(u) {
+	if (!u) return "";
+	if (/^https?:\/\//.test(u)) return u;
+	const p = u.startsWith("/") ? u : `/${u.replace(/^assets\//, "assets/")}`;
+	return SITE_URL + p;
+}
+
+function normalizeImage(src) {
+	if (!src) return "";
+	if (/^https?:\/\//.test(src) || src.startsWith("/")) return src;
+	return `/${src}`;
+}
+
 // 构建指纹（git 短 SHA）：注入每页 <meta name="build">，
 // 供 CI 轮询线上页面判断 Workers 构建是否完成（如 IndexNow 推送前等待）
 let buildId = "";
@@ -48,7 +70,7 @@ function outFilePath(url) {
 	return path.join(distDir, clean, "index.html");
 }
 
-function composeHtml(template, appHtml, head) {
+function composeHtml(template, appHtml, head, routeUrl = "/") {
 	let out = template;
 
 	// 注入页面标题（替换模板已有的 <title>）
@@ -58,7 +80,7 @@ function composeHtml(template, appHtml, head) {
 			`<title>${escapeHtml(head.title)}</title>`,
 		);
 	}
-	// 注入 meta + JSON-LD
+	// 注入 meta + JSON-LD + Open Graph / Twitter Card
 	const inject = [];
 	if (head.description) {
 		// 替换模板里已有的默认 description，避免出现重复 meta
@@ -73,6 +95,33 @@ function composeHtml(template, appHtml, head) {
 			);
 		}
 	}
+
+	// Open Graph / Twitter Card（分享预览）
+	const ogTitle = head.title || "Flygeonの小站";
+	const ogDesc = head.description || "";
+	const ogUrl = absolute(head.url || routeUrl);
+	const ogImage = absolute(normalizeImage(head.image)) || DEFAULT_OG_IMAGE;
+	const ogType = head.type || "website";
+	const ogTags = [
+		`<meta property="og:type" content="${escapeAttr(ogType)}">`,
+		`<meta property="og:site_name" content="Flygeonの小站">`,
+		`<meta property="og:title" content="${escapeAttr(ogTitle)}">`,
+		`<meta property="og:url" content="${escapeAttr(ogUrl)}">`,
+		`<meta property="og:image" content="${escapeAttr(ogImage)}">`,
+	];
+	if (ogDesc) {
+		ogTags.push(`<meta property="og:description" content="${escapeAttr(ogDesc)}">`);
+	}
+	ogTags.push(
+		`<meta name="twitter:card" content="summary_large_image">`,
+		`<meta name="twitter:title" content="${escapeAttr(ogTitle)}">`,
+		`<meta name="twitter:image" content="${escapeAttr(ogImage)}">`,
+	);
+	if (ogDesc) {
+		ogTags.push(`<meta name="twitter:description" content="${escapeAttr(ogDesc)}">`);
+	}
+	inject.push(...ogTags);
+
 	if (head.jsonLd) {
 		inject.push(
 			`<script type="application/ld+json">${JSON.stringify(head.jsonLd)}</script>`,
@@ -112,7 +161,7 @@ async function main() {
 			const { html, head } = await render(url);
 			const file = outFilePath(url);
 			fs.mkdirSync(path.dirname(file), { recursive: true });
-			fs.writeFileSync(file, composeHtml(template, html, head), "utf8");
+			fs.writeFileSync(file, composeHtml(template, html, head, url), "utf8");
 			ok++;
 		} catch (err) {
 			console.error(`❌ 渲染失败 ${url}:`, err);

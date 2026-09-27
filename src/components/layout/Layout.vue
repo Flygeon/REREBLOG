@@ -35,6 +35,9 @@
 
       <!-- 返回顶部（下滚一屏后浮现） -->
       <BackToTop />
+
+      <!-- 亮暗切换的「拉绳灯泡」动画层（仅在切换时挂载） -->
+      <ThemeReveal />
     </div>
   </var-style-provider>
 </template>
@@ -45,7 +48,10 @@ import { useRoute } from "vue-router";
 import AppBar from "@components/layout/AppBar.vue";
 import Footer from "@components/layout/Footer.vue";
 import BackToTop from "@components/BackToTop.vue";
-import Themes from "@varlet/ui/es/themes";
+import ThemeReveal from "@components/ThemeReveal.vue";
+// 只引 md3 亮/暗两套预设（不引整包 themes：避免带上 dark 主题与 convert/toRem 等）
+import md3Dark from "@varlet/ui/es/themes/md3-dark/index.mjs";
+import md3Light from "@varlet/ui/es/themes/md3-light/index.mjs";
 import { currentTheme } from "@lib/theme";
 
 const route = useRoute();
@@ -56,7 +62,7 @@ const route = useRoute();
  * 高于 :root，故必须在这里用站点 MD3 令牌覆盖颜色项。
  */
 const varletThemeVars = computed(() => {
-  const base = currentTheme.value === "dark" ? Themes.md3Dark : Themes.md3Light;
+  const base = currentTheme.value === "dark" ? md3Dark : md3Light;
   return {
     ...base,
     "--color-primary": "var(--md-sys-color-primary)",

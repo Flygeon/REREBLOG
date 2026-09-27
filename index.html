@@ -25,13 +25,27 @@
       name="description"
       content="Flygeon の个人博客：分享 Web 开发与自建项目（Vue 3 自建 SSG 博客、Cloudflare Workers 动态服务），也记录 Bangumi 追番、设计与日常碎碎念。"
     />
-    <!-- Noto Sans SC：正文+标题用（font-display swap 避免 FOIT） -->
+    <!-- Noto Sans SC：正文+标题用。用 preload + media=print 异步加载，
+         不再阻塞首屏渲染；font-display swap 兜底避免 FOIT。 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
     <!-- 主题初始化：在首屏渲染前写入 data-theme，避免暗色模式闪烁 -->
     <script>
       (function () {
@@ -46,6 +60,13 @@
                 ? "dark"
                 : "light";
           document.documentElement.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute(
+              "content",
+              theme === "dark" ? "#0F0F11" : "#1A5C9E",
+            );
+          }
         } catch (e) {}
       })();
     </script>

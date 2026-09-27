@@ -11,9 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
+import { hydrateGithubCards } from "@lib/github-card";
 
 const html = ref("");
 
@@ -28,5 +29,6 @@ setHead({
 
 if (spec) {
   html.value = (await getSpecHtml("about")) ?? "";
+  void nextTick(() => hydrateGithubCards());
 }
 </script>

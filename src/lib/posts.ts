@@ -10,7 +10,12 @@ import { parseFrontmatter } from "@lib/frontmatter";
 import { Post, getSortedPosts, getTagList, getCategoryList } from "@utils/content-utils";
 import { PAGE_SIZE } from "@constants/constants";
 
-// eager 加载：构建期直接内联为字符串，避免运行时访问文件系统
+// 是否走运行时渲染（dev 实时生效 / SSR 预渲染同管线）。
+// 注意：该值决定是否把全部 markdown 源码打进 bundle —— 生产客户端为 false，
+// Rollup 会据此摇掉下面的 eager glob，改用构建期生成的元数据索引。
+const RUNTIME_RENDER = import.meta.env.DEV || import.meta.env.SSR;
+
+// eager 加载：dev / SSR 直接把全部 markdown 作为字符串内联，供 markdown-it 渲染
 const postFiles = import.meta.glob("../content/posts/*.md", {
 	query: "?raw",
 	import: "default",
@@ -22,6 +27,37 @@ const specFiles = import.meta.glob("../content/spec/*.md", {
 	import: "default",
 	eager: true,
 }) as Record<string, string>;
+
+// 生产客户端：构建期 render-content.mjs 生成的元数据索引（无正文）。
+// 生产构建时文件存在，dev 下匹配为空对象，回退到运行时解析。
+const postMetaModules = import.meta.glob("../generated/posts-meta.json", {
+	eager: true,
+	import: "default",
+}) as Record<string, Record<string, PostMeta>>;
+const postMeta = postMetaModules["../generated/posts-meta.json"];
+
+// 搜索语料：懒加载（仅进入搜索页后触发），避免正文随首屏下发
+const lazyPostFiles = import.meta.glob("../content/posts/*.md", {
+	query: "?raw",
+	import: "default",
+}) as Record<string, () => Promise<string>>;
+
+/** 构建期生成的单篇元数据（dates 为 ISO 字符串，纯 JSON 可序列化） */
+interface PostMeta {
+	title: string;
+	published: string;
+	updated?: string;
+	draft?: boolean;
+	description: string;
+	image?: string;
+	tags: string[];
+	category?: string | null;
+	lang?: string;
+	aigc?: Post["data"]["aigc"];
+	pinned?: boolean;
+	words: number;
+	minutes: number;
+}
 
 function slugFromPath(path: string): string {
 	const file = path.split("/").pop() ?? "";
@@ -92,11 +128,59 @@ function parsePosts(files: Record<string, string>): Post[] {
 	return posts;
 }
 
-/** 排序后的全量文章（等价原 getCollection + getSortedPosts） */
-export const allPosts: Post[] = getSortedPosts(parsePosts(postFiles));
+/** 生产客户端：用构建期元数据还原 Post（无正文） */
+function parsePostsFromMeta(meta: Record<string, PostMeta>): Post[] {
+	const posts: Post[] = [];
+	for (const [slug, m] of Object.entries(meta)) {
+		posts.push({
+			slug,
+			body: "",
+			data: {
+				title: m.title ?? slug,
+				published: new Date(m.published),
+				updated: m.updated ? new Date(m.updated) : undefined,
+				draft: m.draft ?? false,
+				description: m.description ?? "",
+				image: m.image,
+				tags: Array.isArray(m.tags) ? m.tags : [],
+				category: m.category ?? null,
+				lang: m.lang,
+				aigc: m.aigc,
+				pinned: m.pinned ?? false,
+			},
+			stats: { words: m.words ?? 0, minutes: m.minutes ?? 0 },
+		});
+	}
+	return posts;
+}
+
+if (!RUNTIME_RENDER && !postMeta) {
+	console.error(
+		"[posts] 缺少构建期元数据 src/generated/posts-meta.json（请完整执行 build:ssg）",
+	);
+}
+
+/** 排序后的全量文章（dev/SSR 运行时解析；生产客户端读构建期元数据） */
+export const allPosts: Post[] = getSortedPosts(
+	RUNTIME_RENDER ? parsePosts(postFiles) : parsePostsFromMeta(postMeta ?? {}),
+);
 
 export function getPostBody(slug: string): string | undefined {
 	return allPosts.find((p) => p.slug === slug)?.body;
+}
+
+/**
+ * 懒加载全部文章正文（仅搜索页使用）。
+ * 正文以独立 chunk 形式按需加载，不会随首屏下发。
+ */
+export async function loadSearchCorpus(): Promise<Record<string, string>> {
+	const out: Record<string, string> = {};
+	await Promise.all(
+		Object.entries(lazyPostFiles).map(async ([path, loader]) => {
+			out[slugFromPath(path)] = (await loader()) as string;
+		}),
+	);
+	return out;
 }
 
 /* ---------------- 构建期预渲染的正文 HTML ---------------- */
@@ -110,9 +194,6 @@ const postHtmlLoaders = import.meta.glob("../generated/posts/*.json", {
 const specHtmlLoaders = import.meta.glob("../generated/spec/*.json", {
 	import: "default",
 }) as Record<string, () => Promise<{ html: string }>>;
-
-/** 是否走运行时渲染（dev 实时生效 / SSR 预渲染同管线） */
-const RUNTIME_RENDER = import.meta.env.DEV || import.meta.env.SSR;
 
 /**
  * 取文章正文 HTML。

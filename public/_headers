@@ -1,0 +1,11 @@
+# Cloudflare 静态资源缓存策略（Pages / 支持 _headers 的 Workers Assets）
+# 带内容哈希的 Vite 产物可永久强缓存（worker/index.js 也对 /assets/* 兜底设置）
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon/*
+  Cache-Control: public, max-age=604800
+
+/bangumi-images.json
+  Cache-Control: public, max-age=86400

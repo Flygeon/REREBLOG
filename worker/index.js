@@ -14,6 +14,9 @@ const BGM_IMG_ORIGIN = "https://lain.bgm.tv";
 const UA = "Flygeon/blog (https://flygeon.top)";
 const IMG_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const API_CACHE_CONTROL = "public, max-age=1800, s-maxage=1800";
+// Vite 带内容哈希的产物（/assets/<name>-<hash>.<ext>）：可永久强缓存
+const HASHED_ASSET_RE =
+  /^\/assets\/.+-[A-Za-z0-9_-]{8}\.(?:js|mjs|css|woff2?|ttf|png|jpe?g|webp|svg|gif|ico)$/;
 
 export default {
   async fetch(request, env, ctx) {
@@ -40,6 +43,17 @@ export default {
     // SPA fallback：仅在尚未完成 SSG 预渲染时启用；SSG 完成后此分支基本不会触发
     if (res.status === 404 && !url.pathname.includes(".")) {
       res = await env.ASSETS.fetch(new URL("/index.html", request.url));
+    }
+
+    // 给带哈希的静态产物补 immutable 缓存（ASSETS 默认不带长缓存策略）
+    if (res.ok && HASHED_ASSET_RE.test(url.pathname)) {
+      const headers = new Headers(res.headers);
+      headers.set("cache-control", "public, max-age=31536000, immutable");
+      return new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers,
+      });
     }
     return res;
   },

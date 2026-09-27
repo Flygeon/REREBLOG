@@ -9,6 +9,8 @@
             :src="bannerUrl"
             alt=""
             aria-hidden="true"
+            fetchpriority="high"
+            decoding="async"
           />
           <div class="home__hero-scrim" aria-hidden="true"></div>
           <div class="home__hero-text">

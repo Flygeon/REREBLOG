@@ -2,8 +2,13 @@ import { createApp as createVueApp, type App as VueApp } from "vue";
 import App from "./App.vue";
 import { createRouter, createWebHistory, createMemoryHistory } from "vue-router";
 import { routes } from "./router";
-import Varlet from "@varlet/ui";
-import "@varlet/ui/es/varlet.css";
+// Varlet 按需引入：全量 `app.use(Varlet)` 会把 800KB+ JS 与 267KB CSS 全打进 entry。
+// 本站只用到 4 个组件，改为命名导入 + 各自的 style 模块（只拉所需依赖 CSS）。
+import { Pagination, StyleProvider, Tab, Tabs } from "@varlet/ui";
+import "@varlet/ui/es/pagination/style/index.mjs";
+import "@varlet/ui/es/tabs/style/index.mjs";
+import "@varlet/ui/es/tab/style/index.mjs";
+import "@varlet/ui/es/style-provider/style/index.mjs";
 // 图标字体走 styles/_icons.scss 的自托管子集（Material Symbols，不使用 emoji / 字符箭头）
 import "./styles/main.scss";
 import { reveal } from "@composables/reveal";
@@ -23,13 +28,16 @@ export function createApp(ssr = false) {
 			: createWebHistory(import.meta.env.BASE_URL),
 		routes,
 		scrollBehavior(_to, _from, savedPosition) {
-			if (savedPosition) return savedPosition;
-			return { top: 0 };
+			if (savedPosition) return { ...savedPosition, behavior: "instant" };
+			return { top: 0, left: 0, behavior: "instant" };
 		},
 	});
 	app.use(router);
-	// Varlet UI 组件库（分页 / 标签页），色板由 StyleProvider 映射到站点令牌
-	app.use(Varlet);
+	// Varlet UI 组件（分页 / 标签页 / StyleProvider），色板由 StyleProvider 映射到站点令牌
+	app.use(Pagination);
+	app.use(Tabs);
+	app.use(Tab);
+	app.use(StyleProvider);
 	// 模板滚动入场指令 v-reveal
 	app.directive("reveal", reveal);
 	// MD3 涟漪触摸反馈 v-ripple

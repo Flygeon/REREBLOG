@@ -33,8 +33,33 @@
       找到 {{ results.length }} 篇文章
     </p>
 
-    <!-- 结果列表 -->
-    <PostList v-if="query" :posts="results" />
+    <!-- 结果列表 / 无结果：AnimatePresence 做 enter/exit，消除「消失瞬切」 -->
+    <AnimatePresence mode="wait">
+      <motion.div
+        v-if="query && results.length"
+        key="results"
+        :initial="{ opacity: 0, y: 8 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :exit="{ opacity: 0, y: -8 }"
+        :transition="{ type: 'spring', stiffness: 320, damping: 30 }"
+      >
+        <PostList :posts="results" />
+      </motion.div>
+      <motion.div
+        v-else-if="query"
+        key="empty"
+        :initial="{ opacity: 0, y: 8 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :exit="{ opacity: 0, y: -8 }"
+        :transition="{ type: 'spring', stiffness: 320, damping: 30 }"
+      >
+        <div class="search__empty">
+          <AppIcon class="search__empty-icon" name="search" :size="40" />
+          <p class="search__empty-title">没有找到与「{{ query }}」相关的文章。</p>
+          <p class="search__empty-tip">换个关键词，或看看下方的热门标签。</p>
+        </div>
+      </motion.div>
+    </AnimatePresence>
 
     <!-- 空状态：未输入 -->
     <div v-if="!query" class="search__hint">
@@ -53,25 +78,25 @@
         </a>
       </div>
     </div>
-
-    <!-- 空状态：无结果 -->
-    <div v-if="query && results.length === 0" class="search__empty">
-      <AppIcon class="search__empty-icon" name="search" :size="40" />
-      <p class="search__empty-title">没有找到与「{{ query }}」相关的文章。</p>
-      <p class="search__empty-tip">换个关键词，或看看下方的热门标签。</p>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { motion, AnimatePresence } from "motion-v";
 import AppIcon from "@components/AppIcon.vue";
 import PostList from "@components/PostList.vue";
-import { allPosts, getPostBody } from "@lib/posts";
+import { allPosts, loadSearchCorpus } from "@lib/posts";
 import { getTagList } from "@utils/content-utils";
 import { setHead } from "@lib/head";
 
 const query = ref("");
+
+// 正文语料懒加载：进入搜索页后才拉取（标题/标签/分类即时可搜，正文随后补上）
+const corpus = ref<Record<string, string> | null>(null);
+onMounted(async () => {
+  corpus.value = await loadSearchCorpus();
+});
 
 setHead({
   title: "站内搜索 - 全站文章检索 | Flygeonの小站",
@@ -92,7 +117,7 @@ const results = computed(() => {
   if (!q) return [];
 
   return allPosts.filter((post) => {
-    const body = getPostBody(post.slug) ?? "";
+    const body = (corpus.value?.[post.slug] ?? "").toLowerCase();
     const haystack = [
       post.data.title,
       post.data.description,

@@ -33,10 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
+import { hydrateGithubCards } from "@lib/github-card";
 
 const html = ref("");
 
@@ -50,6 +51,7 @@ setHead({
 
 if (spec) {
   html.value = (await getSpecHtml("friends")) ?? "";
+  void nextTick(() => hydrateGithubCards());
 }
 
 // 友链数据（对齐原 friends.astro 的 items）

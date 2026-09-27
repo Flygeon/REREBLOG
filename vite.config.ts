@@ -29,6 +29,9 @@ export default defineConfig({
     emptyOutDir: false,
     // 生成 SSG 所需的 manifest（后续 scripts/ssg.mjs 会用到）
     manifest: true,
+    // 全站共用一份样式：默认按异步路由拆出多份高度重复的 CSS（曾达 14×~328KB），
+    // 关掉后合成单文件，跨路由可缓存、总体积更小
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         // 拆分 vendor，便于 Cloudflare Workers 静态托管与缓存

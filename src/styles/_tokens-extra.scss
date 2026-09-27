@@ -10,14 +10,17 @@
 // ============================================================
 
 :root {
-  /* ---- 字体：原模板字体优先，未安装时回落到站点字体 ---- */
-  --ll-font: "SarasaGothicSC-Regular", "Noto Sans SC", "SFPro-Regular",
-    "Helvetica Neue", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  /* ---- 字体：站点实际加载的 Noto Sans SC 优先，其余走系统栈 ----
+     原来的 SarasaGothicSC / SFPro 均未随站加载，访客端命中不了，
+     放在最前只会让实际渲染结果不可预期，这里按「真实可用」重排。 */
+  --ll-font: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui,
+    -apple-system, "Helvetica Neue", sans-serif;
 
   --md-font-brand: var(--ll-font);
   --md-font-plain: var(--ll-font);
-  --md-font-code: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, Menlo,
-    Consolas, "Liberation Mono", monospace;
+  /* 代码字体同样不加载 JetBrains Mono，直接用系统等宽栈，避免"名义字体 vs 实际字体"错位 */
+  --md-font-code: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas,
+    "Liberation Mono", monospace;
 
   /* ---- 布局度量 ---- */
   // 正文阅读列宽：中文舒适区间约 40-46 字/行（16px 字号 ≈ 720px），
