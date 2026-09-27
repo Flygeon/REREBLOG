@@ -37,8 +37,10 @@ export default defineConfig({
   },
   ssr: {
     // Varlet 的按组件 style 入口（es/**/style/index.mjs）会 import .css，
-    // 默认被 externalize 后 Node 直接加载 .css 会抛 ERR_UNKNOWN_FILE_EXTENSION。
-    // 打进包内交给 Vite 处理这些 CSS 导入。
-    noExternal: ["@varlet/ui"],
+    // 默认被 externalize 后 Node 直接加载 .css 会抛 ERR_UNKNOWN_FILE_EXTENSION，
+    // 故把 @varlet/ui 打进包内交给 Vite 处理这些 CSS 导入。
+    // 其依赖 dayjs 的 ESM 入口用了无扩展名相对导入，externalize 后 Node 无法解析
+    // （ERR_MODULE_NOT_FOUND dayjs/esm/constant），同样内联。
+    noExternal: ["@varlet/ui", "dayjs"],
   },
 });
