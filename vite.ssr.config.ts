@@ -35,4 +35,10 @@ export default defineConfig({
       // SSR 产物保持 Node 格式（CommonJS 或 ESM 均可，默认由外部化策略决定）
     },
   },
+  ssr: {
+    // Varlet 的按组件 style 入口（es/**/style/index.mjs）会 import .css，
+    // 默认被 externalize 后 Node 直接加载 .css 会抛 ERR_UNKNOWN_FILE_EXTENSION。
+    // 打进包内交给 Vite 处理这些 CSS 导入。
+    noExternal: ["@varlet/ui"],
+  },
 });
