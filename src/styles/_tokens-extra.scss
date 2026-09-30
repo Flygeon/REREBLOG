@@ -40,11 +40,11 @@
      博客层的卡片统一引用这三条，不再各自写背景/描边。 */
   --site-surface: #eaeff5;
   --site-card: var(--md-sys-color-surface-container-lowest);
-  --site-card-border: color-mix(
-    in srgb,
-    var(--md-sys-color-outline-variant) 55%,
-    transparent
-  );
+  /* 下列 alpha 色是静态兜底值：Chromium < 111 / Safari < 16.2 / Firefox < 113
+     不认识 color-mix()，自定义属性里的 color-mix() 会让引用它的属性在
+     computed-value time 整体失效（var() 的 fallback 救不回来，因为 token
+     本身"已定义"）。文件末尾的 @supports 块会在支持的浏览器上换回动态推导值。 */
+  --site-card-border: rgba(196, 198, 207, 0.55);
   // 模板 --md-elevation-1/2 的 alpha 是 0.2，落在白卡上发脏，这里给一套更柔和的
   --site-elev-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
   --site-elev-2: 0 2px 6px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -57,27 +57,11 @@
   --md-sys-typescale-headline-medium-weight: 600;
   --md-sys-typescale-headline-medium-line-height: 32px;
 
-  /* ---- 状态层：由当前主色推导，亮暗自动跟随 ---- */
-  --md-sys-state-hover: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 8%,
-    transparent
-  );
-  --md-sys-state-focus: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 12%,
-    transparent
-  );
-  --md-sys-state-pressed: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 12%,
-    transparent
-  );
-  --md-sys-state-dragged: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 16%,
-    transparent
-  );
+  /* ---- 状态层：静态兜底（浅色主题主色 #1A5C9E） ---- */
+  --md-sys-state-hover: rgba(26, 92, 158, 0.08);
+  --md-sys-state-focus: rgba(26, 92, 158, 0.12);
+  --md-sys-state-pressed: rgba(26, 92, 158, 0.12);
+  --md-sys-state-dragged: rgba(26, 92, 158, 0.16);
 
   /* ---- Elevation：对齐模板阴影口径（模板为 --md-elevation-1/2/3） ---- */
   --md-sys-elevation-0: none;
@@ -124,11 +108,7 @@
   --color-on-danger: var(--md-sys-color-on-error);
   --color-danger-container: var(--md-sys-color-error-container);
   --color-on-danger-container: var(--md-sys-color-on-error-container);
-  --color-disabled: color-mix(
-    in srgb,
-    var(--md-sys-color-on-surface) 12%,
-    transparent
-  );
+  --color-disabled: rgba(26, 28, 30, 0.12);
   --color-text-disabled: var(--md-sys-color-on-surface-variant);
   --padding-sm: 0.25rem;
   --padding-md: 0.5rem;
@@ -142,35 +122,86 @@
 
 [data-theme="dark"] {
   /* 深色下模板该值本就是中性（#24262A），无需修正 */
-  --md-sys-state-hover: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 12%,
-    transparent
-  );
-  --md-sys-state-focus: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 16%,
-    transparent
-  );
-  --md-sys-state-pressed: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 16%,
-    transparent
-  );
-  --md-sys-state-dragged: color-mix(
-    in srgb,
-    var(--md-sys-color-primary) 20%,
-    transparent
-  );
+  /* 状态层：静态兜底（暗色主题主色 #8BB9F0） */
+  --md-sys-state-hover: rgba(139, 185, 240, 0.12);
+  --md-sys-state-focus: rgba(139, 185, 240, 0.16);
+  --md-sys-state-pressed: rgba(139, 185, 240, 0.16);
+  --md-sys-state-dragged: rgba(139, 185, 240, 0.2);
+  --color-disabled: rgba(226, 226, 229, 0.12);
 
   /* 暗色卡片口径：底板保持 background，卡片取更高一档的 container */
   --site-surface: var(--md-sys-color-background);
   --site-card: var(--md-sys-color-surface-container);
-  --site-card-border: color-mix(
-    in srgb,
-    var(--md-sys-color-outline-variant) 75%,
-    transparent
-  );
+  --site-card-border: rgba(68, 71, 78, 0.75);
   --site-elev-1: 0 1px 2px rgba(0, 0, 0, 0.35);
   --site-elev-2: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+   现代颜色特性恢复层（渐进增强）
+   上面写的是静态 alpha 兜底值；仅当浏览器支持 color-mix() 时，
+   才切回由主题色动态推导的版本 —— 亮暗切换与主色变化都能自动跟随。
+   支持：Chromium 111+ / Safari 16.2+ / Firefox 113+
+   ============================================================ */
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root {
+    --site-card-border: color-mix(
+      in srgb,
+      var(--md-sys-color-outline-variant) 55%,
+      transparent
+    );
+    --md-sys-state-hover: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 8%,
+      transparent
+    );
+    --md-sys-state-focus: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 12%,
+      transparent
+    );
+    --md-sys-state-pressed: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 12%,
+      transparent
+    );
+    --md-sys-state-dragged: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 16%,
+      transparent
+    );
+    --color-disabled: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface) 12%,
+      transparent
+    );
+  }
+
+  [data-theme="dark"] {
+    --md-sys-state-hover: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 12%,
+      transparent
+    );
+    --md-sys-state-focus: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 16%,
+      transparent
+    );
+    --md-sys-state-pressed: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 16%,
+      transparent
+    );
+    --md-sys-state-dragged: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 20%,
+      transparent
+    );
+    --site-card-border: color-mix(
+      in srgb,
+      var(--md-sys-color-outline-variant) 75%,
+      transparent
+    );
+  }
 }

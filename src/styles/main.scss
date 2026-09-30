@@ -20,23 +20,40 @@
 html {
   // 始终保留滚动条槽位，避免长短页面切换时内容横移
   overflow-y: scroll;
-  // 滚动条跟随主题着色（原生控件用 color-scheme，这里是细节润色）
-  scrollbar-color: color-mix(
-      in srgb,
-      var(--md-sys-color-on-surface) 28%,
-      transparent
-    )
-    transparent;
+  /* 滚动条跟随主题着色（原生控件用 color-scheme，这里是细节润色）。
+     scrollbar-color 需 Chromium 121+ / Firefox 64+ / Safari 18.2+，
+     而其颜色又依赖 color-mix()（Chromium 111+ / Safari 16.2+），
+     两个条件同时满足才有意义 —— 整体放进 @supports，
+     避免低版本内核里留下一条永远无效的声明。 */
+  @supports (scrollbar-color: red blue) and (color: color-mix(in srgb, red, blue)) {
+    scrollbar-color: color-mix(
+        in srgb,
+        var(--md-sys-color-on-surface) 28%,
+        transparent
+      )
+      transparent;
+  }
 }
 
-/* 排版细节（渐进增强，旧浏览器忽略） */
-:where(h1, h2, h3, .section-title, .post-list__title) {
-  text-wrap: balance;
+/*
+  排版细节（渐进增强）。
+  :where() 需 Chromium 88+，用它把特异性压到 0，避免影响既有覆盖关系；
+  text-wrap 本身需 Chromium 114+。两个条件叠加后包进 @supports selector()，
+  这样 Chromium 87 及更早不会解析到 :where()。
+*/
+@supports selector(:where(a)) {
+  :where(h1, h2, h3, .section-title, .post-list__title) {
+    text-wrap: balance;
+  }
+  :where(.markdown-body p, .post-card__desc) {
+    text-wrap: pretty;
+  }
 }
-:where(.markdown-body p, .post-card__desc) {
-  text-wrap: pretty;
-}
+
 ::selection {
+  /* 静态兜底（浅色主色 28%）：Chromium < 111 无 color-mix()，
+     下面那条声明会被整体丢弃，选中高亮退化为固定色（影响极小） */
+  background: rgba(26, 92, 158, 0.28);
   background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent);
   color: var(--md-sys-color-on-surface);
 }

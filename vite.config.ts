@@ -2,13 +2,42 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 
+/**
+ * 把 esbuild 摘掉的 data URI 引号补回来。
+ *
+ * esbuild 的 CSS minifier 会把 url("...") 统一压成 url(...)。对普通路径无害，
+ * 但 @varlet/ui 的 icon.css 里内联了一段 36KB 的 base64 图标字体：
+ *   src: url("data:font/truetype;charset=utf-8;base64,....") format("truetype")
+ * 去引号后它变成「单个超长且含分号的 url token」。旧内核解析这类 token 时可能
+ * 出错并连累后续规则（Chromium 88 实测整份样式表失效、页面裸奔），而它位于
+ * 产物 CSS 约 8% 处 —— 一旦解析中断，其后的 MD3 令牌与组件样式会全部丢失。
+ * 这里在产物落盘前只给 data URI 补回引号，其余 url 保持压缩后的形态。
+ */
+function restoreDataUriQuotes() {
+  return {
+    name: "restore-data-uri-quotes",
+    enforce: "post" as const,
+    generateBundle(_options: unknown, bundle: Record<string, any>) {
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk?.type !== "asset" || !fileName.endsWith(".css")) continue;
+        const css = String(chunk.source);
+        const fixed = css.replace(
+          /(?<![-\w])url\(\s*(data:[^)"']*)\s*\)/g,
+          (_match, uri: string) => `url("${uri}")`,
+        );
+        if (fixed !== css) chunk.source = fixed;
+      }
+    },
+  };
+}
+
 // Vite + Vue 3 自建 SSG 工程配置
 // - 开发期：vite dev 提供 SPA 调试
 // - 生产期：先 `vite build` 产出客户端资源，再 scripts/ssg.mjs 预渲染各路由为静态 HTML
 export default defineConfig({
   // 分站（GitHub Pages）部署在 /REBLOG/ 子路径下，由 VITE_BASE 注入；主站保持 /
   base: process.env.VITE_BASE || "/",
-  plugins: [vue()],
+  plugins: [vue(), restoreDataUriQuotes()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -24,6 +53,12 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    // 显式声明目标浏览器（与 Vite 6 默认值一致，写出来避免默认值随版本漂移）。
+    // 注意：target 只约束 JS/CSS 的「语法降级」，不做特性 polyfill ——
+    // color-mix() / oklch() / :where() / aspect-ratio 的兼容由样式层的
+    // @supports 兜底（见 _tokens-extra / _markdown / _blog / main）。
+    target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+    cssTarget: ["chrome87", "edge88", "firefox78", "safari14"],
     // 关闭内置清空；由构建前 `rm -rf dist` 手动清理，
     // 以绕过 WorkBuddy safe-delete shim 在 Windows 下的超时
     emptyOutDir: false,

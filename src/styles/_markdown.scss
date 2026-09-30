@@ -88,8 +88,9 @@
   a {
     color: var(--md-sys-color-primary);
     text-decoration: none;
-    border-bottom: 1px solid
-      color-mix(in srgb, var(--md-sys-color-primary) 35%, transparent);
+    /* 静态兜底（浅色主色 35%）：Chromium < 111 无 color-mix()。
+       暗色由文件末尾的 [data-theme="dark"] 覆盖，支持的浏览器再由 @supports 恢复 */
+    border-bottom: 1px solid rgba(26, 92, 158, 0.35);
     transition: border-color 0.2s ease, background 0.2s ease;
   }
   a:hover {
@@ -204,29 +205,30 @@
   blockquote.admonition p {
     margin: 0.4em 0;
   }
+  /* 下列配色为静态兜底值（oklch 的 sRGB 对应色 + 10% alpha）。
+     oklch() 需 Chromium 111+ / Safari 15.4+ / Firefox 113+，
+     color-mix() 需 Chromium 111+ / Safari 16.2+ / Firefox 113+。
+     注意：不能只依赖 var(--admonition-bg, fallback) —— 自定义属性一旦被赋值
+     就是「已定义」，var() 的 fallback 不会在取值无效时接管，必须给出真值。 */
   blockquote.admonition.bdm-note {
     --admonition-color: var(--md-sys-color-secondary);
-    --admonition-bg: color-mix(
-      in srgb,
-      var(--md-sys-color-secondary) 10%,
-      transparent
-    );
+    --admonition-bg: rgba(83, 95, 112, 0.1);
   }
   blockquote.admonition.bdm-tip {
-    --admonition-color: oklch(60% 0.13 160);
-    --admonition-bg: color-mix(in srgb, oklch(60% 0.13 160) 10%, transparent);
+    --admonition-color: #179765;
+    --admonition-bg: rgba(23, 151, 101, 0.1);
   }
   blockquote.admonition.bdm-important {
-    --admonition-color: oklch(58% 0.15 285);
-    --admonition-bg: color-mix(in srgb, oklch(58% 0.15 285) 10%, transparent);
+    --admonition-color: #736ace;
+    --admonition-bg: rgba(115, 106, 206, 0.1);
   }
   blockquote.admonition.bdm-caution {
-    --admonition-color: oklch(68% 0.15 75);
-    --admonition-bg: color-mix(in srgb, oklch(68% 0.15 75) 10%, transparent);
+    --admonition-color: #cb8900;
+    --admonition-bg: rgba(203, 137, 0, 0.1);
   }
   blockquote.admonition.bdm-warning {
-    --admonition-color: oklch(55% 0.19 27);
-    --admonition-bg: color-mix(in srgb, oklch(55% 0.19 27) 10%, transparent);
+    --admonition-color: #c9302d;
+    --admonition-bg: rgba(201, 48, 45, 0.1);
   }
 
   // ---- spoiler 剧透隐藏（:spoiler[~~text~~]） ----
@@ -336,5 +338,57 @@
   }
   50% {
     opacity: 0.4;
+  }
+}
+
+/* ---- 暗色下的静态兜底（暗色主色 #8BB9F0 / secondary #BBC7DB） ---- */
+html[data-theme="dark"] .markdown-body a {
+  border-bottom-color: rgba(139, 185, 240, 0.35);
+}
+html[data-theme="dark"] .markdown-body blockquote.admonition.bdm-note {
+  --admonition-bg: rgba(187, 199, 219, 0.1);
+}
+
+/* ============================================================
+   现代颜色特性恢复层（渐进增强）
+   上面写的是静态兜底值；仅当浏览器同时支持 color-mix() 与 oklch() 时，
+   才切回按主题色动态推导的版本。亮暗两种主题都给出选择器，
+   保证能覆盖住上面的暗色兜底规则。
+   支持：Chromium 111+ / Safari 16.2+ / Firefox 113+
+   ============================================================ */
+@supports (color: color-mix(in srgb, red, blue)) and (color: oklch(50% 0.1 200)) {
+  .markdown-body a,
+  html[data-theme="dark"] .markdown-body a {
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 35%,
+      transparent
+    );
+  }
+
+  .markdown-body blockquote.admonition.bdm-note,
+  html[data-theme="dark"] .markdown-body blockquote.admonition.bdm-note {
+    --admonition-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-secondary) 10%,
+      transparent
+    );
+  }
+
+  .markdown-body blockquote.admonition.bdm-tip {
+    --admonition-color: oklch(60% 0.13 160);
+    --admonition-bg: color-mix(in srgb, oklch(60% 0.13 160) 10%, transparent);
+  }
+  .markdown-body blockquote.admonition.bdm-important {
+    --admonition-color: oklch(58% 0.15 285);
+    --admonition-bg: color-mix(in srgb, oklch(58% 0.15 285) 10%, transparent);
+  }
+  .markdown-body blockquote.admonition.bdm-caution {
+    --admonition-color: oklch(68% 0.15 75);
+    --admonition-bg: color-mix(in srgb, oklch(68% 0.15 75) 10%, transparent);
+  }
+  .markdown-body blockquote.admonition.bdm-warning {
+    --admonition-color: oklch(55% 0.19 27);
+    --admonition-bg: color-mix(in srgb, oklch(55% 0.19 27) 10%, transparent);
   }
 }

@@ -1,17 +1,265 @@
 {
-  "updatedAt": "2026-09-04T15:14:44.243Z",
+  "updatedAt": "2026-09-30T15:09:55.462Z",
   "items": [
     {
-      "subject_id": 583729,
+      "subject_id": 571784,
       "type": 1,
+      "name": "スーパーの裏でヤニ吸うふたり",
+      "name_cn": "在超市后门吸烟的二人",
+      "score": 6.9,
+      "cover": "/r/400/pic/cover/l/6f/42/571784_leRlL.jpg"
+    },
+    {
+      "subject_id": 899,
+      "type": 3,
+      "name": "名探偵コナン",
+      "name_cn": "名侦探柯南",
+      "score": 7.5,
+      "cover": "/r/400/pic/cover/l/01/88/899_REwVW.jpg"
+    },
+    {
+      "subject_id": 975,
+      "type": 3,
+      "name": "ONE PIECE",
+      "name_cn": "航海王",
+      "score": 8.3,
+      "cover": "/r/400/pic/cover/l/92/97/975_GFGYI.jpg"
+    },
+    {
+      "subject_id": 88287,
+      "type": 1,
+      "name": "ご注文はうさぎですか？",
+      "name_cn": "请问您今天要来点兔子吗？",
+      "score": 7.3,
+      "cover": "/r/400/pic/cover/l/9f/2f/88287_h4xKo.jpg"
+    },
+    {
+      "subject_id": 100444,
+      "type": 1,
+      "name": "四月は君の嘘",
+      "name_cn": "四月是你的谎言",
+      "score": 8,
+      "cover": "/r/400/pic/cover/l/ec/c7/100444_96r3J.jpg"
+    },
+    {
+      "subject_id": 106329,
+      "type": 2,
+      "name": "遊☆戯☆王 THE DARK SIDE OF DIMENSIONS",
+      "name_cn": "游戏王 次元之暗面",
+      "score": 7.4,
+      "cover": "/r/400/pic/cover/l/ed/4b/106329_k0196.jpg"
+    },
+    {
+      "subject_id": 3711,
+      "type": 3,
+      "name": "遊☆戯☆王デュエルモンスターズGX",
+      "name_cn": "游戏王－怪兽之决斗GX",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/ab/a1/3711_zVYL3.jpg"
+    },
+    {
+      "subject_id": 69214,
+      "type": 1,
+      "name": "私がモテないのはどう考えてもお前らが悪い!",
+      "name_cn": "我不受欢迎，怎么想都是你们的错！",
+      "score": 6.9,
+      "cover": "/r/400/pic/cover/l/05/6c/69214_qB7Wi.jpg"
+    },
+    {
+      "subject_id": 179949,
+      "type": 2,
+      "name": "小林さんちのメイドラゴン",
+      "name_cn": "小林家的龙女仆",
+      "score": 7.4,
+      "cover": "/r/400/pic/cover/l/e9/15/179949_c2j50.jpg"
+    },
+    {
+      "subject_id": 583729,
+      "type": 5,
       "name": "BanG Dream! ゆめ∞みた",
       "name_cn": "BanG Dream! YUME∞MITA",
-      "score": 5.4,
+      "score": 4.8,
       "cover": "/r/400/pic/cover/l/1c/e4/583729_KxOZV.jpg"
     },
     {
-      "subject_id": 604826,
+      "subject_id": 454684,
+      "type": 5,
+      "name": "BanG Dream! Ave Mujica",
+      "name_cn": "",
+      "score": 4.1,
+      "cover": "/r/400/pic/cover/l/77/c3/454684_ZH5tU.jpg"
+    },
+    {
+      "subject_id": 2585,
+      "type": 2,
+      "name": "とある科学の超電磁砲",
+      "name_cn": "某科学的超电磁炮",
+      "score": 7.5,
+      "cover": "/r/400/pic/cover/l/36/e7/2585_pn2eP.jpg"
+    },
+    {
+      "subject_id": 231722,
+      "type": 2,
+      "name": "邪神ちゃんドロップキック",
+      "name_cn": "邪神与厨二病少女",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/49/c0/231722_1DDIx.jpg"
+    },
+    {
+      "subject_id": 188091,
+      "type": 2,
+      "name": "ガヴリールドロップアウト",
+      "name_cn": "珈百璃的堕落",
+      "score": 7.1,
+      "cover": "/r/400/pic/cover/l/39/3d/188091_diaJ7.jpg"
+    },
+    {
+      "subject_id": 295017,
+      "type": 2,
+      "name": "回復術士のやり直し",
+      "name_cn": "回复术士的重来人生",
+      "score": 6.3,
+      "cover": "/r/400/pic/cover/l/c7/3f/295017_90As6.jpg"
+    },
+    {
+      "subject_id": 329114,
+      "type": 2,
+      "name": "陰の実力者になりたくて！",
+      "name_cn": "想要成为影之实力者！",
+      "score": 7.1,
+      "cover": "/r/400/pic/cover/l/39/96/329114_mB55b.jpg"
+    },
+    {
+      "subject_id": 239816,
+      "type": 2,
+      "name": "転生したらスライムだった件",
+      "name_cn": "关于我转生变成史莱姆这档事",
+      "score": 6.7,
+      "cover": "/r/400/pic/cover/l/7b/d6/239816_BbNdb.jpg"
+    },
+    {
+      "subject_id": 444557,
+      "type": 2,
+      "name": "無職転生Ⅱ ～異世界行ったら本気だす～ 第2クール",
+      "name_cn": "无职转生 第二季 ～到了异世界就拿出真本事～ 第2部分",
+      "score": 7.6,
+      "cover": "/r/400/pic/cover/l/ad/25/444557_e4hPO.jpg"
+    },
+    {
+      "subject_id": 93545,
+      "type": 4,
+      "name": "甘城ブリリアントパーク",
+      "name_cn": "甘城光辉游乐园",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/69/e5/93545_zYRKK.jpg"
+    },
+    {
+      "subject_id": 325585,
+      "type": 2,
+      "name": "無職転生 ～異世界行ったら本気だす～ 第2クール",
+      "name_cn": "无职转生～到了异世界就拿出真本事～ 第2部分",
+      "score": 8.3,
+      "cover": "/r/400/pic/cover/l/60/4d/325585_tfU01.jpg"
+    },
+    {
+      "subject_id": 140001,
+      "type": 2,
+      "name": "Re:ゼロから始める異世界生活",
+      "name_cn": "Re：从零开始的异世界生活",
+      "score": 7.5,
+      "cover": "/r/400/pic/cover/l/cb/78/140001_Ew1mo.jpg"
+    },
+    {
+      "subject_id": 240038,
       "type": 1,
+      "name": "青春ブタ野郎はバニーガール先輩の夢を見ない",
+      "name_cn": "青春猪头少年不会梦到兔女郎学姐",
+      "score": 7.4,
+      "cover": "/r/400/pic/cover/l/b9/45/240038_b5j7g.jpg"
+    },
+    {
+      "subject_id": 387822,
+      "type": 3,
+      "name": "白聖女と黒牧師",
+      "name_cn": "白圣女与黑牧师",
+      "score": 6.7,
+      "cover": "/r/400/pic/cover/l/0f/0b/387822_nHUhn.jpg"
+    },
+    {
+      "subject_id": 204145,
+      "type": 1,
+      "name": "ブレンド・S",
+      "name_cn": "调教咖啡厅",
+      "score": 6.8,
+      "cover": "/r/400/pic/cover/l/f4/fe/204145_mbsLs.jpg"
+    },
+    {
+      "subject_id": 150746,
+      "type": 2,
+      "name": "この美術部には問題がある！",
+      "name_cn": "这个美术社大有问题！",
+      "score": 7.3,
+      "cover": "/r/400/pic/cover/l/b6/fb/150746_AAL5A.jpg"
+    },
+    {
+      "subject_id": 424883,
+      "type": 4,
+      "name": "時々ボソッとロシア語でデレる隣のアーリャさん",
+      "name_cn": "不时轻声地以俄语遮羞的邻座艾莉同学",
+      "score": 5.5,
+      "cover": "/r/400/pic/cover/l/7c/8e/424883_BpzVb.jpg"
+    },
+    {
+      "subject_id": 356756,
+      "type": 2,
+      "name": "パリピ孔明",
+      "name_cn": "派对浪客诸葛孔明",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/93/98/356756_ro03P.jpg"
+    },
+    {
+      "subject_id": 424663,
+      "type": 1,
+      "name": "魔法少女にあこがれて",
+      "name_cn": "梦想成为魔法少女",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/96/d1/424663_mM5GN.jpg"
+    },
+    {
+      "subject_id": 849,
+      "type": 4,
+      "name": "To LOVEる -とらぶる-",
+      "name_cn": "出包王女",
+      "score": 7,
+      "cover": "/r/400/pic/cover/l/fe/8c/849_9xbj1.jpg"
+    },
+    {
+      "subject_id": 378862,
+      "type": 2,
+      "name": "お兄ちゃんはおしまい！",
+      "name_cn": "别当欧尼酱了！",
+      "score": 7.6,
+      "cover": "/r/400/pic/cover/l/7e/ca/378862_24TnR.jpg"
+    },
+    {
+      "subject_id": 400602,
+      "type": 4,
+      "name": "葬送のフリーレン",
+      "name_cn": "葬送的芙莉莲",
+      "score": 8.5,
+      "cover": "/r/400/pic/cover/l/13/c5/400602_ZI8Y9.jpg"
+    },
+    {
+      "subject_id": 135275,
+      "type": 2,
+      "name": "この素晴らしい世界に祝福を！",
+      "name_cn": "为美好的世界献上祝福！",
+      "score": 7.7,
+      "cover": "/r/400/pic/cover/l/56/de/135275_G3liq.jpg"
+    },
+    {
+      "subject_id": 604826,
+      "type": 3,
       "name": "超かぐや姫！",
       "name_cn": "超辉夜姬！",
       "score": 8.1,
@@ -23,7 +271,7 @@
       "name": "ヒカルの碁",
       "name_cn": "棋魂",
       "score": 8.3,
-      "cover": "/r/400/pic/cover/l/c3/61/605_Jg0W8.jpg"
+      "cover": "/r/400/pic/cover/l/c3/61/605_CZYx4.jpg"
     },
     {
       "subject_id": 623854,
@@ -183,7 +431,7 @@
       "name": "ウマ娘 プリティーダービー Season 2",
       "name_cn": "赛马娘 Pretty Derby 第二季",
       "score": 8.4,
-      "cover": "/r/400/pic/cover/l/1c/6b/315574_tLgrT.jpg"
+      "cover": "/r/400/pic/cover/l/1c/6b/315574_7778r.jpg"
     },
     {
       "subject_id": 509297,

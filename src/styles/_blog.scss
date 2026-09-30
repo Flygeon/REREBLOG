@@ -318,10 +318,13 @@
 .post-card__rail:focus-visible {
   outline: 2px solid var(--md-sys-color-primary);
   outline-offset: 2px;
+  /* 静态兜底：Chromium < 111 不认 color-mix()，会让下面那条声明整体无效被丢弃 */
+  background: #c6dbf1;
   background: color-mix(in srgb, var(--md-sys-color-primary) 14%, #e2f0ff);
 }
 /* hover：在常态底色上按主色加深，保持同一色系 */
 .post-card:hover .post-card__rail {
+  background: #c6dbf1;
   background: color-mix(in srgb, var(--md-sys-color-primary) 14%, #e2f0ff);
 }
 /*
@@ -329,9 +332,11 @@
   换成主色半透明铺底（叠在卡片底色上，自动跟随主题）。
 */
 [data-theme="dark"] .post-card__rail {
+  background: rgba(139, 185, 240, 0.22);
   background: color-mix(in srgb, var(--md-sys-color-primary) 22%, transparent);
 }
 [data-theme="dark"] .post-card:hover .post-card__rail {
+  background: rgba(139, 185, 240, 0.34);
   background: color-mix(in srgb, var(--md-sys-color-primary) 34%, transparent);
 }
 /* 无封面时给文字内容让出装饰条的宽度（右内边距 28px + 装饰条 52px） */
@@ -1384,5 +1389,58 @@
     .nav.is-open {
       transition: none;
     }
+  }
+}
+
+/* ============================================================
+   aspect-ratio 降级（Chromium < 88 不支持该属性）
+   用 padding-top 百分比占位还原宽高比 —— 百分比按「包含块宽度」计算，
+   所以只要元素本身撑满包含块宽度，比例就成立。
+   容器改为 height:0 + padding-top，图片改绝对定位铺满。
+
+   条件写 @supports not (aspect-ratio: auto)：auto 是该属性的初始值，
+   凡是支持 aspect-ratio 的浏览器都认得，这样可避免在条件里出现
+   除法写法（16 / 9）被 Sass 当成算术求值。
+   ============================================================ */
+@supports not (aspect-ratio: auto) {
+  /* 16 / 9 → padding-top 56.25% */
+  .post-card__cover,
+  .rec-card__cover {
+    height: 0;
+    padding-top: 56.25%;
+  }
+  .post-card__cover img,
+  .rec-card__cover img {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  /* rec-card__cover 原本靠 flex 居中显示「无封面」时的图标；
+     height:0 后 content box 高度塌陷，图标改为绝对居中 */
+  .rec-card__cover > .app-icon,
+  .rec-card__cover > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* 3 / 4 → padding-top 133.3333% */
+  .side-bgm__item,
+  .side-bgm__skeleton,
+  .bangumi__card-img,
+  .bangumi__sk-img {
+    height: 0;
+    padding-top: 133.3333%;
+  }
+  /* side-bgm__item 原本没有定位上下文，补上让图片能绝对定位 */
+  .side-bgm__item {
+    position: relative;
+  }
+  .side-bgm__item img,
+  .bangumi__card-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 }
