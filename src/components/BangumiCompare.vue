@@ -13,13 +13,25 @@
       </div>
     </header>
 
-    <form class="bgm-fold__search" @submit.prevent="submit">
+    <!--
+      用 form 是为了让回车能提交，但组件是客户端专属的（SSG 产物里只有静态标记）。
+      水合完成前点按钮 / 按回车时 Vue 还没挂上 @submit.prevent，浏览器会按原生 GET
+      提交整页刷新，地址栏变成 ?bgm-user=sai，用户刚填的内容直接丢掉。
+      form 上挂原生 onsubmit="return false" 兜住水合前的提交（禁用 JS 时也生效）；
+      method="dialog" 作为第二道保险，避免任何情况下触发原生 GET 导航。
+      水合完成后 Vue 的 @submit.prevent 照常调用 submit()。
+    -->
+    <form
+      class="bgm-fold__search"
+      method="dialog"
+      onsubmit="return false"
+      @submit.prevent="submit"
+    >
       <AppIcon class="bgm-fold__search-icon" name="person_search" :size="20" />
       <input
         v-model="keyword"
         class="bgm-fold__input"
         type="text"
-        name="bgm-user"
         inputmode="url"
         autocomplete="off"
         spellcheck="false"
@@ -221,6 +233,24 @@
   </section>
 </template>
 
+<script lang="ts">
+/**
+ * 模块作用域（故意放在 <script setup> 之外）。
+ *
+ * <script setup> 里的顶层代码会被编译进 setup()，而 setup 执行时
+ * app.mount("#app") 已经清空了预渲染 DOM —— 那时再查输入框只会读到空值。
+ *
+ * 本文件是路由懒加载 chunk，其模块求值发生在 router.isReady() → mount 之前，
+ * 所以只有写在这里、作为普通 <script> 顶层语句，才能抢在挂载前读到
+ * 用户在慢网下提前敲进输入框的内容（本站是 SSG + createApp 非 hydrate，
+ * 挂载会整体替换预渲染 DOM，不抢读就会被 v-model 的初始值冲掉）。
+ */
+export const preMountInput =
+  typeof document === "undefined"
+    ? ""
+    : (document.querySelector<HTMLInputElement>(".bgm-fold__input")?.value ?? "");
+</script>
+
 <script setup lang="ts">
 /**
  * BangumiCompare.vue —— 「和 TA 的重合番剧」
@@ -256,7 +286,7 @@ const EXAMPLES = ["https://bgm.tv/user/sai", "bgm.tv/user/1250652", "sai"];
 const route = useRoute();
 const router = useRouter();
 
-const keyword = ref("");
+const keyword = ref(preMountInput);
 const loading = ref(false);
 const loadingUser = ref("");
 const error = ref("");
