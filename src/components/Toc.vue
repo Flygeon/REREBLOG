@@ -131,7 +131,7 @@ onUnmounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: var(--z-below);
   border-radius: inherit;
   background: var(--md-sys-color-on-surface);
   opacity: 0;

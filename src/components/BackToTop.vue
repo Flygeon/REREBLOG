@@ -63,7 +63,7 @@ onUnmounted(() => {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 60;
+  z-index: var(--z-fab);
   display: inline-flex;
   align-items: center;
   justify-content: center;

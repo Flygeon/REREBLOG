@@ -229,7 +229,7 @@ onUnmounted(clearTimers);
 .theme-reveal {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   overflow: hidden;
   pointer-events: none;
 }
@@ -247,7 +247,7 @@ onUnmounted(clearTimers);
   top: 0;
   border-radius: 50%;
   /* 盖在灯泡之上：光扩散时把灯泡「吞掉」，不靠灯泡自己淡出 */
-  z-index: 2;
+  z-index: var(--z-decor);
   will-change: transform, opacity;
 }
 
@@ -257,7 +257,7 @@ onUnmounted(clearTimers);
   top: 0;
   margin-left: -42px;
   margin-top: -68px;
-  z-index: 1;
+  z-index: var(--z-raised);
   will-change: transform, opacity;
 }
 

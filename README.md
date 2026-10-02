@@ -18,6 +18,35 @@
 
 主题色沿用模板：`#1A5C9E`（浅色）/ `#8BB9F0`（深色），亮暗由 `html[data-theme]` 切换。
 
+### 设计令牌速查
+
+全部样式**只通过令牌取值**，业务代码里不写裸色值 / 间距 / z-index。令牌来源与含义：
+
+| 类别 | 前缀 | 数量 | 说明 |
+| :--- | :--- | ---: | :--- |
+| 颜色 | `--md-sys-color-*` | 68 | M3 语义色，亮暗各一套（`_template.scss`）。**禁止动态取色 / Monet**（已回滚） |
+| 排版 | `--md-sys-typescale-*` | display / headline / title / body / label | 每级含 `size` / `weight` / `line-height`；headline-large/medium 为本站补入 |
+| 形状 | `--md-sys-shape-corner-*` | 7 | none → extra-small → small → medium → large → extra-large → full |
+| 动效 | `--md-sys-motion-*` | 8 | duration 3 档（short/medium/long）+ easing 5 条（standard/emphasized/spring 等） |
+| 状态层 | `--md-sys-state-*` | 4 | hover / focus / pressed / dragged 的不透明度档位（由主色 `color-mix` 推导） |
+| 层级 | `--md-sys-elevation-*` | 5 | 模板阴影口径 |
+| 布局 | `--md-layout-*` | 5 | 内容列宽 / 外壳宽 / 侧栏宽 / 栏距 / 顶栏高 |
+| 间距 | `--space-*` | 16 | **间距标尺**，4px 栅格 + 2px 半档（`--space-1`=2px … `--space-16`=64px） |
+| 层叠 | `--z-*` | 9 | **层叠标尺**，`below`(-1) / `base`(0) / `raised` / `decor` / `badge` / `header`(50) / `fab` / `progress` / `overlay` |
+| 站点 | `--site-*` | 5 | 博客层卡片口径：`surface` / `card` / `card-border` / `elev-1` / `elev-2` |
+| 模板 | `--ll-*` `--lm-*` | 13 | 模板原始度量（容器宽 `1200px`、栏距 `24px`、圆角档、发丝线等） |
+
+**层级与单元约定**
+
+- 卡片：外层卡 `corner-large`(16px) / 卡内嵌套块 `corner-medium`(12px) / chip·pill `corner-full`。
+- 卡片视觉一律引用 `--site-card` + `--site-card-border` + `--site-elev-*`，不各写背景色。
+- hover 用 MD3 state layer（`::before` 叠 `on-surface` 8%），不写死背景色。
+- 间距写 `var(--space-*)`；正文排版用 `em`（需随字号缩放），见 `_markdown.scss`。
+- 图标：Material Symbols ligature（`AppIcon.vue`），**禁止 emoji / 字符箭头 / 手绘 SVG**；尺寸收敛为 16 / 20 / 24 三档（外加空态 40）。
+- 每处动效都要有 `prefers-reduced-motion` 降级。
+
+> 改造项的完整来龙去脉（32 条，含已实施/已关闭的状态与决策原因）见 `UI-REFACTOR-CHECKLIST.md`。
+
 ---
 
 ## ✨ 功能

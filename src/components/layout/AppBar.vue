@@ -190,7 +190,7 @@ onUnmounted(() => {
     background: var(--md-sys-color-primary-container);
     opacity: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: var(--z-base);
     transition:
       transform var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard),
       width var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard),
@@ -202,7 +202,7 @@ onUnmounted(() => {
   /* 链接抬到胶囊之上（文字可见），自身不再带 active 背景 —— 高亮交给胶囊 */
   .nav a {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
   }
   .nav a.is-active {
     background: transparent;
