@@ -1064,18 +1064,54 @@
 
 /* ---------- 番剧 ---------- */
 /* ---------- 番剧：与别人的重合（BangumiCompare.vue） ----------
-   放在 .bangumi__tabs 之前，所以这里把与上方页头的间距也一并给出 */
+   默认折叠：收起时只剩一行标题，点击展开。放在 .bangumi__tabs 之前，
+   所以这里把与上方页头的间距也一并给出 */
 .bgm-fold {
   margin-top: var(--space-10);
-  padding: var(--space-10);
   border-radius: var(--ll-radius-card);
   border: 1px solid var(--site-card-border);
   background: var(--md-sys-color-surface-container-low);
+  /* 卡片自身不设内边距：标题按钮需要撑满整行才能让点击区域与 hover 态铺满 */
+  overflow: hidden;
 }
-.bgm-fold__head {
+/* 标题按钮：整行可点，hover/按压走 MD3 state layer */
+.bgm-fold__head-btn {
+  position: relative;
+  isolation: isolate;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-7);
+  width: 100%;
+  padding: var(--space-8) var(--space-10);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.bgm-fold__head-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-below);
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.bgm-fold__head-btn:hover::before {
+  opacity: 0.08;
+}
+.bgm-fold__head-btn:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+.bgm-fold__head-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .bgm-fold__badge {
   display: inline-flex;
@@ -1089,6 +1125,12 @@
   color: var(--md-sys-color-on-primary-container);
 }
 .bgm-fold__title {
+  /* h2 只作语义容器，视觉一律交给内部命名元素 */
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+.bgm-fold__title-text {
   font-size: var(--md-sys-typescale-title-medium-size);
   font-weight: 600;
   line-height: 1.4;
@@ -1102,6 +1144,32 @@
 .bgm-fold__sub strong {
   color: var(--md-sys-color-primary);
   font-weight: 600;
+}
+/* 折叠状态下的结果摘要：收起也能一眼看到重合了几部 */
+.bgm-fold__head-chip {
+  flex: none;
+  margin-left: auto;
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bgm-fold__chevron {
+  flex: none;
+  /* 默认把箭头推到最右（无 chip 时）；有 chip 时由相邻选择器交还间距。
+     刻意不用 :has() —— 它需要 Chromium 105+，而本站 target 到 chrome87。 */
+  margin-left: auto;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.bgm-fold__head-chip + .bgm-fold__chevron {
+  margin-left: 0;
+}
+/* 展开后的内容区：左右内边距与标题行对齐 */
+.bgm-fold__body {
+  padding: 0 var(--space-10) var(--space-10);
 }
 /* 输入行：沿用 .search__box 的口径（52px / large 圆角 / focus-within 变主色） */
 .bgm-fold__search {
@@ -1773,9 +1841,6 @@
 
 /* 窄屏：输入框独占一行，按钮贴右，避免 52px 行内挤成一团 */
 @media (max-width: 600px) {
-  .bgm-fold {
-    padding: var(--space-8);
-  }
   /* 窄屏：图标 + 输入定格第一行，清空 / 按钮换到第二行右对齐 */
   .bgm-fold__search {
     flex-wrap: wrap;
@@ -1802,6 +1867,25 @@
   .bgm-fold__grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: var(--space-7);
+  }
+  /*
+    窄屏收起时说明会折成 3 行，标题行反而更占地方（实测 174px），
+    与「折叠=省空间」的目的相悖。未展开时把说明截成一行省略号，
+    展开后恢复完整两三行。同样用 -webkit-line-clamp（与 .side-card--hero
+    的简介一致，Chromium 87 起可用）。
+  */
+  .bgm-fold__head-btn {
+    padding: var(--space-7) var(--space-8);
+    gap: var(--space-6);
+  }
+  .bgm-fold:not(.is-expanded) .bgm-fold__sub {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bgm-fold__body {
+    padding: 0 var(--space-8) var(--space-8);
   }
 }
 

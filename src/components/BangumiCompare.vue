@@ -1,258 +1,285 @@
 <template>
-  <section class="bgm-fold" aria-labelledby="bgm-fold-title">
+  <section
+    class="bgm-fold"
+    :class="{ 'is-expanded': expanded }"
+    aria-labelledby="bgm-fold-title"
+  >
+    <!-- 默认折叠：收起时整块只剩这一行标题，不占篇幅；点标题展开 -->
     <header class="bgm-fold__head">
-      <span class="bgm-fold__badge">
-        <AppIcon name="compare_arrows" :size="22" />
-      </span>
-      <div class="bgm-fold__head-text">
-        <h2 id="bgm-fold-title" class="bgm-fold__title">和 TA 的重合番剧</h2>
-        <p class="bgm-fold__sub">
-          填上别人博客的 Bangumi 页面地址（或 TA 的 Bangumi 主页 / 用户名 / UID），
-          看看你们<strong>都看过</strong>哪些番，以及各自给了几分。
-        </p>
-      </div>
+      <h2 class="bgm-fold__title">
+        <button
+          class="bgm-fold__head-btn"
+          type="button"
+          :aria-expanded="expanded"
+          aria-controls="bgm-fold-body"
+          :aria-label="expanded ? '收起和 TA 的重合番剧' : '展开和 TA 的重合番剧'"
+          @click="expanded = !expanded"
+        >
+          <span class="bgm-fold__badge">
+            <AppIcon name="compare_arrows" :size="22" />
+          </span>
+          <span class="bgm-fold__head-text">
+            <span id="bgm-fold-title" class="bgm-fold__title-text">和 TA 的重合番剧</span>
+            <span class="bgm-fold__sub">
+              填上别人博客的 Bangumi 页面地址（或 TA 的 Bangumi 主页 / 用户名 / UID），
+              看看你们<strong>都看过</strong>哪些番，以及各自给了几分。
+            </span>
+          </span>
+          <!-- 折叠时也能看到结果规模，不用展开才知道 -->
+          <span v-if="result" class="bgm-fold__head-chip">
+            {{ result.total }} 部都看过
+          </span>
+          <AppIcon
+            class="bgm-fold__chevron"
+            :name="expanded ? 'expand_less' : 'expand_more'"
+            :size="24"
+          />
+        </button>
+      </h2>
     </header>
 
-    <!--
-      用 form 是为了让回车能提交，但组件是客户端专属的（SSG 产物里只有静态标记）。
-      水合完成前点按钮 / 按回车时 Vue 还没挂上 @submit.prevent，浏览器会按原生 GET
-      提交整页刷新，地址栏变成 ?bgm-user=sai，用户刚填的内容直接丢掉。
-      form 上挂原生 onsubmit="return false" 兜住水合前的提交（禁用 JS 时也生效）；
-      method="dialog" 作为第二道保险，避免任何情况下触发原生 GET 导航。
-      水合完成后 Vue 的 @submit.prevent 照常调用 submit()。
-    -->
-    <form
-      class="bgm-fold__search"
-      method="dialog"
-      onsubmit="return false"
-      @submit.prevent="submit"
-    >
-      <AppIcon class="bgm-fold__search-icon" name="person_search" :size="20" />
+    <div v-if="expanded" id="bgm-fold-body" class="bgm-fold__body">
       <!--
-        注意：这里刻意用 type="search" 而不是 type="text"。
-        Bitwarden 的自动填充脚本（bootstrap-autofill-overlay.js）会扫描页面上的输入框，
-        对命中的字段挂 IntersectionObserver + MutationObserver，并在判定可见性时反复调用
-        getBoundingClientRect()（见其 dom-element-visibility.service.ts），
-        在滚动 / 输入过程中造成强制同步重排。
-        而 Bitwarden 采集字段的选择器对 type 有一份**无条件排除**名单：
-          hidden / submit / reset / button / image / file / search / url /
-          date / time / datetime / datetime-local / week / color / range
-        type="search" 正好在名单里，所以这个字段不会被它采集，也就不会有 overlay 重排。
-        （对比：全站只有本输入框用 type="text"，是唯一被 Bitwarden 采集的字段；
-         Search 页用的是 type="search"，因此从来不受影响。）
-
-        不用 type="url" 的原因：它同样被排除，但会把 "sai" / "1250652" 这类
-        Bangumi 用户名判为非法，触发表单约束校验并阻止 submit 事件，
-        「开始对比」和回车都会失效（type="search" 接受任意字符串）。
-
-        data-bwignore / data-1p-ignore / data-lpignore 是各家的「忽略本字段」标记，
-        作为兜底一起写上；其中 Bitwarden 的 data-bwignore 需要用户在扩展里
-        手动开启「遵循页面属性」才生效，所以真正的保障是上面的 type="search"。
+        用 form 是为了让回车能提交，但组件是客户端专属的（SSG 产物里只有静态标记）。
+        水合完成前点按钮 / 按回车时 Vue 还没挂上 @submit.prevent，浏览器会按原生 GET
+        提交整页刷新，地址栏变成 ?bgm-user=sai，用户刚填的内容直接丢掉。
+        form 上挂原生 onsubmit="return false" 兜住水合前的提交（禁用 JS 时也生效）；
+        method="dialog" 作为第二道保险，避免任何情况下触发原生 GET 导航。
+        水合完成后 Vue 的 @submit.prevent 照常调用 submit()。
       -->
-      <input
-        v-model="keyword"
-        class="bgm-fold__input"
-        type="search"
-        inputmode="url"
-        autocomplete="off"
-        data-bwignore
-        data-1p-ignore
-        data-lpignore="true"
-        spellcheck="false"
-        :placeholder="PLACEHOLDER"
-        aria-label="对方的 Bangumi 用户名或主页地址"
-        :disabled="loading"
-        @input="onInput"
-      />
-      <button
-        v-if="keyword"
-        class="bgm-fold__clear"
-        type="button"
-        aria-label="清空输入"
-        :disabled="loading"
-        @click="clear"
+      <form
+        class="bgm-fold__search"
+        method="dialog"
+        onsubmit="return false"
+        @submit.prevent="submit"
       >
-        <AppIcon name="close" :size="16" />
-      </button>
-      <button
-        v-ripple
-        class="lm-btn lm-btn--filled bgm-fold__submit"
-        type="submit"
-        :disabled="loading"
-      >
-        <AppIcon
-          :name="loading ? 'progress_activity' : 'compare_arrows'"
-          :size="18"
-          :class="{ 'bgm-fold__spin': loading }"
+        <AppIcon class="bgm-fold__search-icon" name="person_search" :size="20" />
+        <!--
+          注意：这里刻意用 type="search" 而不是 type="text"。
+          Bitwarden 的自动填充脚本（bootstrap-autofill-overlay.js）会扫描页面上的输入框，
+          对命中的字段挂 IntersectionObserver + MutationObserver，并在判定可见性时反复调用
+          getBoundingClientRect()（见其 dom-element-visibility.service.ts），
+          在滚动 / 输入过程中造成强制同步重排。
+          而 Bitwarden 采集字段的选择器对 type 有一份**无条件排除**名单：
+            hidden / submit / reset / button / image / file / search / url /
+            date / time / datetime / datetime-local / week / color / range
+          type="search" 正好在名单里，所以这个字段不会被它采集，也就不会有 overlay 重排。
+          （对比：全站只有本输入框用 type="text"，是唯一被 Bitwarden 采集的字段；
+           Search 页用的是 type="search"，因此从来不受影响。）
+
+          不用 type="url" 的原因：它同样被排除，但会把 "sai" / "1250652" 这类
+          Bangumi 用户名判为非法，触发表单约束校验并阻止 submit 事件，
+          「开始对比」和回车都会失效（type="search" 接受任意字符串）。
+
+          data-bwignore / data-1p-ignore / data-lpignore 是各家的「忽略本字段」标记，
+          作为兜底一起写上；其中 Bitwarden 的 data-bwignore 需要用户在扩展里
+          手动开启「遵循页面属性」才生效，所以真正的保障是上面的 type="search"。
+        -->
+        <input
+          v-model="keyword"
+          class="bgm-fold__input"
+          type="search"
+          inputmode="url"
+          autocomplete="off"
+          data-bwignore
+          data-1p-ignore
+          data-lpignore="true"
+          spellcheck="false"
+          :placeholder="PLACEHOLDER"
+          aria-label="对方的 Bangumi 用户名或主页地址"
+          :disabled="loading"
+          @input="onInput"
         />
-        {{ loading ? "对比中" : "开始对比" }}
-      </button>
-    </form>
-
-    <!-- 示例：点一下直接跑，省得用户猜要填什么 -->
-    <div class="bgm-fold__examples">
-      <span class="bgm-fold__examples-label">试试：</span>
-      <button
-        v-for="example in EXAMPLES"
-        :key="example"
-        class="bgm-fold__example"
-        type="button"
-        :disabled="loading"
-        @click="useExample(example)"
-      >
-        <AppIcon name="link" :size="14" />
-        {{ example }}
-      </button>
-    </div>
-
-    <!-- 状态区：role=status 让读屏在结果出来时得到提示 -->
-    <p class="bgm-fold__status" role="status" aria-live="polite">
-      <template v-if="loading">正在读取 {{ loadingUser }} 的收藏…</template>
-      <template v-else-if="error">{{ error }}</template>
-    </p>
-
-    <!-- 加载骨架（与结果网格同尺寸，避免布局跳动） -->
-    <div v-if="loading" class="bgm-fold__grid" aria-hidden="true">
-      <div v-for="n in 4" :key="n" class="bgm-fold__card bgm-fold__card--skeleton">
-        <div class="bgm-fold__card-img bgm-fold__sk-img"></div>
-        <div class="bgm-fold__card-info">
-          <div class="bgm-fold__sk-line"></div>
-          <div class="bgm-fold__sk-line bgm-fold__sk-line--pill"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 结果 -->
-    <div v-else-if="result" class="bgm-fold__result">
-      <div class="bgm-fold__stats">
-        <span class="bgm-fold__stat bgm-fold__stat--primary">
-          <AppIcon name="compare_arrows" :size="16" />
-          {{ result.total }} 部都看过
-        </span>
-        <span class="bgm-fold__stat">重合度 {{ result.overlapPercent }}%</span>
-        <span class="bgm-fold__stat">我看过 {{ result.myWatched }} 部</span>
-        <span class="bgm-fold__stat">TA 看过 {{ result.theirWatched }} 部</span>
-        <span v-if="result.bothRated" class="bgm-fold__stat">
-          双方评分 {{ result.bothRated }} 部：我更高 {{ result.myHigher }} · TA 更高
-          {{ result.theirHigher }} · 持平 {{ result.sameRate }}
-        </span>
-      </div>
-
-      <p class="bgm-fold__caption">
-        与「{{ result.userId }}」的重合番剧 ·
-        <template v-if="result.bothRated">
-          均分 我 {{ fmt(result.myAvg) }} / TA {{ fmt(result.theirAvg) }} ·
-        </template>
-        按双方评分排序
-      </p>
-
-      <div v-if="result.items.length" class="bgm-fold__toolbar">
         <button
-          class="bgm-fold__toggle"
+          v-if="keyword"
+          class="bgm-fold__clear"
           type="button"
-          :aria-pressed="showComments"
-          @click="showComments = !showComments"
+          aria-label="清空输入"
+          :disabled="loading"
+          @click="clear"
         >
-          <AppIcon :name="showComments ? 'expand_less' : 'expand_more'" :size="16" />
-          {{ showComments ? "收起短评" : "显示短评" }}
+          <AppIcon name="close" :size="16" />
+        </button>
+        <button
+          v-ripple
+          class="lm-btn lm-btn--filled bgm-fold__submit"
+          type="submit"
+          :disabled="loading"
+        >
+          <AppIcon
+            :name="loading ? 'progress_activity' : 'compare_arrows'"
+            :size="18"
+            :class="{ 'bgm-fold__spin': loading }"
+          />
+          {{ loading ? "对比中" : "开始对比" }}
+        </button>
+      </form>
+
+      <!-- 示例：点一下直接跑，省得用户猜要填什么 -->
+      <div class="bgm-fold__examples">
+        <span class="bgm-fold__examples-label">试试：</span>
+        <button
+          v-for="example in EXAMPLES"
+          :key="example"
+          class="bgm-fold__example"
+          type="button"
+          :disabled="loading"
+          @click="useExample(example)"
+        >
+          <AppIcon name="link" :size="14" />
+          {{ example }}
         </button>
       </div>
 
-      <div v-if="result.items.length" class="bgm-fold__grid">
-        <a
-          v-for="item in visibleItems"
-          :key="item.id"
-          class="bgm-fold__card"
-          :href="`https://bgm.tv/subject/${item.id}`"
-          target="_blank"
-          rel="noopener"
-        >
-          <div class="bgm-fold__card-img">
-            <img
-              v-if="item.cover"
-              :src="item.cover"
-              :alt="item.name_cn || item.name"
-              loading="lazy"
-            />
-            <span v-if="item.score > 0" class="bangumi__card-score">
-              {{ item.score.toFixed(1) }}
-            </span>
-          </div>
-          <div class="bgm-fold__card-info">
-            <div class="bgm-fold__card-title" :title="item.name_cn || item.name">
-              {{ item.name_cn || item.name }}
-            </div>
-            <!-- 评分行：只渲染真实存在的分数。双方都没打分时整行不出现，
-                 避免每张卡都挂一条「我 —」的噪声 -->
-            <div v-if="item.myRate || item.theirRate" class="bgm-fold__rates">
-              <span
-                v-if="item.myRate"
-                class="bgm-fold__rate bgm-fold__rate--mine"
-                :title="`我的评分 ${item.myRate}`"
-              >
-                我 {{ item.myRate.toFixed(1) }}
-              </span>
-              <span
-                v-if="item.theirRate"
-                class="bgm-fold__rate bgm-fold__rate--theirs"
-                :title="`TA 的评分 ${item.theirRate}`"
-              >
-                TA {{ item.theirRate.toFixed(1) }}
-              </span>
-              <span
-                v-if="gapText(item)"
-                class="bgm-fold__gap"
-                :class="gapClass(item)"
-              >
-                {{ gapText(item) }}
-              </span>
-            </div>
-            <div v-if="showComments" class="bgm-fold__comments">
-              <p v-if="item.myComment" class="bgm-fold__comment">
-                <span class="bgm-fold__comment-who">我</span>{{ item.myComment }}
-              </p>
-              <p v-if="item.theirComment" class="bgm-fold__comment">
-                <span class="bgm-fold__comment-who">TA</span>{{ item.theirComment }}
-              </p>
-              <p v-if="!item.myComment && !item.theirComment" class="bgm-fold__comment bgm-fold__comment--none">
-                双方都没有写短评
-              </p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <!-- 空交集 -->
-      <div v-else class="bgm-fold__empty">
-        <AppIcon name="group" :size="36" />
-        <p class="bgm-fold__empty-title">
-          暂时没有和「{{ result.userId }}」都看过的番剧。
-        </p>
-        <p class="bgm-fold__empty-tip">
-          （已比较 TA 标记为「看过」的 {{ result.theirWatched }} 部动画）
-        </p>
-      </div>
-
-      <button
-        v-if="hasMore"
-        v-ripple
-        class="lm-btn lm-btn--outlined bgm-fold__more"
-        type="button"
-        @click="shown += PAGE_SIZE"
-      >
-        再显示 {{ Math.min(PAGE_SIZE, result.items.length - shown) }} 部（还有
-        {{ result.items.length - shown }} 部）
-      </button>
-    </div>
-
-    <!-- 初始态 -->
-    <div v-else-if="!error" class="bgm-fold__empty">
-      <AppIcon name="group" :size="36" />
-      <p class="bgm-fold__empty-title">还没开始对比</p>
-      <p class="bgm-fold__empty-tip">
-        对方也用 Bangumi 的话，把 TA 的 Bangumi 用户名 / UID 填进去就行；
-        如果 TA 的博客有独立的番剧页，直接粘页面地址——我会尽量从里面认出 Bangumi 用户名。
+      <!-- 状态区：role=status 让读屏在结果出来时得到提示 -->
+      <p class="bgm-fold__status" role="status" aria-live="polite">
+        <template v-if="loading">正在读取 {{ loadingUser }} 的收藏…</template>
+        <template v-else-if="error">{{ error }}</template>
       </p>
+
+      <!-- 加载骨架（与结果网格同尺寸，避免布局跳动） -->
+      <div v-if="loading" class="bgm-fold__grid" aria-hidden="true">
+        <div v-for="n in 4" :key="n" class="bgm-fold__card bgm-fold__card--skeleton">
+          <div class="bgm-fold__card-img bgm-fold__sk-img"></div>
+          <div class="bgm-fold__card-info">
+            <div class="bgm-fold__sk-line"></div>
+            <div class="bgm-fold__sk-line bgm-fold__sk-line--pill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结果 -->
+      <div v-else-if="result" class="bgm-fold__result">
+        <div class="bgm-fold__stats">
+          <span class="bgm-fold__stat bgm-fold__stat--primary">
+            <AppIcon name="compare_arrows" :size="16" />
+            {{ result.total }} 部都看过
+          </span>
+          <span class="bgm-fold__stat">重合度 {{ result.overlapPercent }}%</span>
+          <span class="bgm-fold__stat">我看过 {{ result.myWatched }} 部</span>
+          <span class="bgm-fold__stat">TA 看过 {{ result.theirWatched }} 部</span>
+          <span v-if="result.bothRated" class="bgm-fold__stat">
+            双方评分 {{ result.bothRated }} 部：我更高 {{ result.myHigher }} · TA 更高
+            {{ result.theirHigher }} · 持平 {{ result.sameRate }}
+          </span>
+        </div>
+
+        <p class="bgm-fold__caption">
+          与「{{ result.userId }}」的重合番剧 ·
+          <template v-if="result.bothRated">
+            均分 我 {{ fmt(result.myAvg) }} / TA {{ fmt(result.theirAvg) }} ·
+          </template>
+          按双方评分排序
+        </p>
+
+        <div v-if="result.items.length" class="bgm-fold__toolbar">
+          <button
+            class="bgm-fold__toggle"
+            type="button"
+            :aria-pressed="showComments"
+            @click="showComments = !showComments"
+          >
+            <AppIcon :name="showComments ? 'expand_less' : 'expand_more'" :size="16" />
+            {{ showComments ? "收起短评" : "显示短评" }}
+          </button>
+        </div>
+
+        <div v-if="result.items.length" class="bgm-fold__grid">
+          <a
+            v-for="item in visibleItems"
+            :key="item.id"
+            class="bgm-fold__card"
+            :href="`https://bgm.tv/subject/${item.id}`"
+            target="_blank"
+            rel="noopener"
+          >
+            <div class="bgm-fold__card-img">
+              <img
+                v-if="item.cover"
+                :src="item.cover"
+                :alt="item.name_cn || item.name"
+                loading="lazy"
+              />
+              <span v-if="item.score > 0" class="bangumi__card-score">
+                {{ item.score.toFixed(1) }}
+              </span>
+            </div>
+            <div class="bgm-fold__card-info">
+              <div class="bgm-fold__card-title" :title="item.name_cn || item.name">
+                {{ item.name_cn || item.name }}
+              </div>
+              <!-- 评分行：只渲染真实存在的分数。双方都没打分时整行不出现，
+                   避免每张卡都挂一条「我 —」的噪声 -->
+              <div v-if="item.myRate || item.theirRate" class="bgm-fold__rates">
+                <span
+                  v-if="item.myRate"
+                  class="bgm-fold__rate bgm-fold__rate--mine"
+                  :title="`我的评分 ${item.myRate}`"
+                >
+                  我 {{ item.myRate.toFixed(1) }}
+                </span>
+                <span
+                  v-if="item.theirRate"
+                  class="bgm-fold__rate bgm-fold__rate--theirs"
+                  :title="`TA 的评分 ${item.theirRate}`"
+                >
+                  TA {{ item.theirRate.toFixed(1) }}
+                </span>
+                <span
+                  v-if="gapText(item)"
+                  class="bgm-fold__gap"
+                  :class="gapClass(item)"
+                >
+                  {{ gapText(item) }}
+                </span>
+              </div>
+              <div v-if="showComments" class="bgm-fold__comments">
+                <p v-if="item.myComment" class="bgm-fold__comment">
+                  <span class="bgm-fold__comment-who">我</span>{{ item.myComment }}
+                </p>
+                <p v-if="item.theirComment" class="bgm-fold__comment">
+                  <span class="bgm-fold__comment-who">TA</span>{{ item.theirComment }}
+                </p>
+                <p v-if="!item.myComment && !item.theirComment" class="bgm-fold__comment bgm-fold__comment--none">
+                  双方都没有写短评
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- 空交集 -->
+        <div v-else class="bgm-fold__empty">
+          <AppIcon name="group" :size="36" />
+          <p class="bgm-fold__empty-title">
+            暂时没有和「{{ result.userId }}」都看过的番剧。
+          </p>
+          <p class="bgm-fold__empty-tip">
+            （已比较 TA 标记为「看过」的 {{ result.theirWatched }} 部动画）
+          </p>
+        </div>
+
+        <button
+          v-if="hasMore"
+          v-ripple
+          class="lm-btn lm-btn--outlined bgm-fold__more"
+          type="button"
+          @click="shown += PAGE_SIZE"
+        >
+          再显示 {{ Math.min(PAGE_SIZE, result.items.length - shown) }} 部（还有
+          {{ result.items.length - shown }} 部）
+        </button>
+      </div>
+
+      <!-- 初始态 -->
+      <div v-else-if="!error" class="bgm-fold__empty">
+        <AppIcon name="group" :size="36" />
+        <p class="bgm-fold__empty-title">还没开始对比</p>
+        <p class="bgm-fold__empty-tip">
+          对方也用 Bangumi 的话，把 TA 的 Bangumi 用户名 / UID 填进去就行；
+          如果 TA 的博客有独立的番剧页，直接粘页面地址——我会尽量从里面认出 Bangumi 用户名。
+        </p>
+      </div>
     </div>
   </section>
 </template>
@@ -273,6 +300,19 @@ export const preMountInput =
   typeof document === "undefined"
     ? ""
     : (document.querySelector<HTMLInputElement>(".bgm-fold__input")?.value ?? "");
+
+/**
+ * 挂载前就展开面板：只有「用户已经在里面填过东西」时才这么做。
+ *
+ * 默认折叠是为了不占篇幅，但如果用户（或浏览器自动填充）在 bundle 到达前
+ * 就往输入框里敲了内容，再把面板收起来会显得莫名其妙 —— 那些内容会连着
+ * 面板一起被藏进折叠区，用户以为没生效。所以抢读到非空输入时直接展开。
+ * 另外 URL 带 ?bgm= 时（分享链接 / 刷新）也展开，见 onMounted。
+ */
+export const preMountExpanded =
+  typeof document === "undefined"
+    ? false
+    : (document.querySelector<HTMLInputElement>(".bgm-fold__input")?.value ?? "") !== "";
 </script>
 
 <script setup lang="ts">
@@ -310,6 +350,11 @@ const EXAMPLES = ["https://bgm.tv/user/sai", "bgm.tv/user/1250652", "sai"];
 const route = useRoute();
 const router = useRouter();
 
+/**
+ * 折叠状态：默认收起（不占篇幅），点标题行展开。
+ * 初始值来自模块作用域的抢读结果，避免「已在输入框中填了内容却被折叠隐藏」。
+ */
+const expanded = ref(preMountExpanded);
 const keyword = ref(preMountInput);
 const loading = ref(false);
 const loadingUser = ref("");
@@ -397,6 +442,7 @@ async function runCompare(userId: string): Promise<void> {
 
 /** 提交：解析输入 → 回写地址栏 → 比对 */
 function submit(): void {
+  expanded.value = true;
   let userId = "";
   try {
     userId = parseBangumiUser(keyword.value);
@@ -419,6 +465,7 @@ function syncQuery(userId: string): void {
 }
 
 function useExample(example: string): void {
+  expanded.value = true;
   keyword.value = example;
   submit();
 }
@@ -445,6 +492,8 @@ function readQuery(): string {
 onMounted(() => {
   const userId = readQuery();
   if (userId) {
+    // 分享链接 / 刷新：直接展开并跑一次，否则用户看到的是收起的空面板
+    expanded.value = true;
     keyword.value = userId;
     void runCompare(userId);
   }
@@ -455,6 +504,7 @@ watch(
   (value) => {
     const userId = typeof value === "string" ? value.trim() : "";
     if (!userId || userId === lastRun) return;
+    expanded.value = true;
     keyword.value = userId;
     void runCompare(userId);
   },
