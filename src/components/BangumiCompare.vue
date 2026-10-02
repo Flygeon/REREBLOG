@@ -28,12 +28,36 @@
       @submit.prevent="submit"
     >
       <AppIcon class="bgm-fold__search-icon" name="person_search" :size="20" />
+      <!--
+        注意：这里刻意用 type="search" 而不是 type="text"。
+        Bitwarden 的自动填充脚本（bootstrap-autofill-overlay.js）会扫描页面上的输入框，
+        对命中的字段挂 IntersectionObserver + MutationObserver，并在判定可见性时反复调用
+        getBoundingClientRect()（见其 dom-element-visibility.service.ts），
+        在滚动 / 输入过程中造成强制同步重排。
+        而 Bitwarden 采集字段的选择器对 type 有一份**无条件排除**名单：
+          hidden / submit / reset / button / image / file / search / url /
+          date / time / datetime / datetime-local / week / color / range
+        type="search" 正好在名单里，所以这个字段不会被它采集，也就不会有 overlay 重排。
+        （对比：全站只有本输入框用 type="text"，是唯一被 Bitwarden 采集的字段；
+         Search 页用的是 type="search"，因此从来不受影响。）
+
+        不用 type="url" 的原因：它同样被排除，但会把 "sai" / "1250652" 这类
+        Bangumi 用户名判为非法，触发表单约束校验并阻止 submit 事件，
+        「开始对比」和回车都会失效（type="search" 接受任意字符串）。
+
+        data-bwignore / data-1p-ignore / data-lpignore 是各家的「忽略本字段」标记，
+        作为兜底一起写上；其中 Bitwarden 的 data-bwignore 需要用户在扩展里
+        手动开启「遵循页面属性」才生效，所以真正的保障是上面的 type="search"。
+      -->
       <input
         v-model="keyword"
         class="bgm-fold__input"
-        type="text"
+        type="search"
         inputmode="url"
         autocomplete="off"
+        data-bwignore
+        data-1p-ignore
+        data-lpignore="true"
         spellcheck="false"
         :placeholder="PLACEHOLDER"
         aria-label="对方的 Bangumi 用户名或主页地址"

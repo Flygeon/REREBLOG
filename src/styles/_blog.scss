@@ -1135,6 +1135,24 @@
   font-family: inherit;
   font-size: var(--md-sys-typescale-body-medium-size);
 }
+/*
+  输入框用 type="search"（为避开 Bitwarden 的字段采集，见组件内注释），
+  代价是 WebKit / Blink 会自带一个「清除」按钮，与组件自绘的 .bgm-fold__clear 重复。
+  这里把原生控件隐藏掉，统一走自绘按钮（图标与样式都受本站 token 控制）。
+  appearance: none 同时清掉 iOS Safari 的原生圆角与内阴影。
+*/
+.bgm-fold__input::-webkit-search-cancel-button,
+.bgm-fold__input::-webkit-search-decoration,
+.bgm-fold__input::-webkit-search-results-button,
+.bgm-fold__input::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.bgm-fold__input {
+  -webkit-appearance: none;
+  appearance: none;
+}
 .bgm-fold__input::placeholder {
   color: var(--md-sys-color-on-surface-variant);
 }
