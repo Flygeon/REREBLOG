@@ -31,13 +31,48 @@ function restoreDataUriQuotes() {
   };
 }
 
+/**
+ * 把图标字体提前写进 <head> 的 <link rel="preload">。
+ *
+ * 为什么需要：图标字体原本只在构建后的 CSS 里被 url() 引用，浏览器要先拿到
+ * CSS（首屏 CSS 是 ~200KB，压缩后 ~50KB）才发现字体，再发起第二个请求 ——
+ * 字体在关键路径上被串行延后了一整个 RTT。
+ *
+ * @font-face 用的是 font-display: block（刻意不改 swap，见 _icons.scss 注释），
+ * 所以「发现得晚」会直接表现为首屏图标短暂空白。preload 让浏览器在解析 HTML 时
+ * 就并行发起字体请求，与 CSS 下载重叠。
+ *
+ * Vite 会给字体加内容哈希，插件在 generateBundle 阶段拿到真实文件名，
+ * 注入 <head>，并带上 crossorigin（字体请求必须 CORS，缺少会被丢弃并告警）。
+ */
+function preloadIconFont() {
+  return {
+    name: "preload-icon-font",
+    enforce: "post" as const,
+    transformIndexHtml(html: string, ctx: { bundle?: Record<string, any> }) {
+      const font = Object.keys(ctx.bundle ?? {}).find((f) =>
+        /assets\/material-symbols-rounded-subset-.*\.woff2$/.test(f),
+      );
+      if (!font) return html;
+      // base 可能是 "/"（主站）或 "/REBLOG/"（GitHub Pages 分站），必须带上
+      const base = process.env.VITE_BASE || "/";
+      const href = (base.endsWith("/") ? base : base + "/") + font.replace(/^\//, "");
+      return html.replace(
+        "</head>",
+        `  <link rel="preload" as="font" type="font/woff2" href="${href}" crossorigin>
+  </head>`,
+      );
+    },
+  };
+}
+
 // Vite + Vue 3 自建 SSG 工程配置
 // - 开发期：vite dev 提供 SPA 调试
 // - 生产期：先 `vite build` 产出客户端资源，再 scripts/ssg.mjs 预渲染各路由为静态 HTML
 export default defineConfig({
   // 分站（GitHub Pages）部署在 /REBLOG/ 子路径下，由 VITE_BASE 注入；主站保持 /
   base: process.env.VITE_BASE || "/",
-  plugins: [vue(), restoreDataUriQuotes()],
+  plugins: [vue(), restoreDataUriQuotes(), preloadIconFont()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

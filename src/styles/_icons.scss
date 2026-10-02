@@ -3,10 +3,17 @@
 //
 // 原方案：@material-symbols/font-400 的 rounded.css + 全量 woff2（0.54MB，
 // 内含 3000+ 图标）。本站实际只用到 26 个图标，故改为自托管子集：
-// 35KB，减少 93%。
+// 5KB，减少 99%。
 //
-// 子集构成（Google Fonts 按 icon_names 生成，可变字体轴 opsz/wght/FILL/GRAD，
-// 与 AppIcon 的 font-variation-settings 对应。改完这份清单务必重新下载字体，
+// ⚠️ 字体是「固定轴」的静态实例（不是可变字体）：
+//   Google Fonts 默认按 opsz/wght/FILL/GRAD@20..48,100..700,0..1,-50..200 生成
+//   可变字体，四个轴全带上会让文件大 7 倍（35KB）。而 AppIcon.vue 始终请求
+//   FILL 0 / wght 400 / GRAD 0 / opsz 24 这一组固定取值，可变轴完全用不到，
+//   因此下载时直接把轴钉死成 @24,400,0,0 —— 35KB -> 5KB，且渲染逐像素一致。
+//   .material-symbols-rounded 已显式声明 font-weight: normal，
+//   所以静态字体不会因为继承到 600 字重而被浏览器合成加粗。
+//
+// 子集构成（Google Fonts 按 icon_names 生成。改完这份清单务必重新下载字体，
 // 否则新图标会退化成纯文本）：
 //   arrow_forward, arrow_upward, article, auto_stories, close, compare_arrows,
 //   dark_mode, expand_less, expand_more, folder, group, inventory_2, light_mode,
@@ -15,7 +22,9 @@
 //
 // ⚠️ 新增图标后必须重新生成子集，否则新图标会显示为纯文本：
 //   1. 把新图标名追加到上面的列表
-//   2. 访问 https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<逗号分隔的图标名>
+//   2. 访问 https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=<逗号分隔的图标名>
+//      （轴固定为 AppIcon 实际请求的 24,400,0,0，别再写回 20..48,100..700 那种区间，
+//        否则文件会变大 7 倍）
 //   3. 取 CSS 里的 woff2 地址下载，覆盖 src/assets/fonts/ 下的字体文件
 //
 // 许可：Material Symbols 由 Google 以 Apache License 2.0 发布
@@ -25,8 +34,13 @@
 @font-face {
   font-family: "Material Symbols Rounded";
   font-style: normal;
-  font-weight: 100 700;
-  // block：图标是页面骨架的一部分，避免先显示图标名文本再跳变
+  // 静态实例：固定 400。写 100 700 会让浏览器误以为有真实多字重，
+  // 而 .material-symbols-rounded 又显式 font-weight: normal，两处保持一致更稳。
+  font-weight: normal;
+  // block：图标是页面骨架的一部分，避免先显示图标名文本再跳变。
+  // 不用 Lighthouse 建议的 swap：本字体是 ligature 图标字体，swap 的字形回退
+  // 期间会把图标渲染成字面文本（search / dark_mode / menu_book），比短暂空白难看得多。
+  // 真正的问题是「字体太大 + 发现太晚」，已在数据侧解决（5KB + <link rel=preload>）。
   font-display: block;
   src: url("../assets/fonts/material-symbols-rounded-subset.woff2")
     format("woff2");
