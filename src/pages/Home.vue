@@ -40,7 +40,12 @@
         <Pagination :current-page="safePage" :last-page="totalPages" />
       </div>
 
-      <aside class="blog-grid__aside">
+      <!--
+        右侧栏延迟挂载：内含 Bangumi 外部请求与分类/标签统计，
+        不必占用首屏关键路径，等浏览器空闲再挂。
+        该栏在窄屏是 position: static（仍显示在正文下方），所以不按媒体查询裁剪。
+      -->
+      <aside v-if="sidebarReady" class="blog-grid__aside">
         <Sidebar />
       </aside>
     </div>
@@ -57,6 +62,7 @@ import { allPosts } from "@lib/posts";
 import { PAGE_SIZE } from "@constants/constants";
 import { siteConfig } from "@/config";
 import { setHead, SITE_TITLE, SITE_DESCRIPTION } from "@lib/head";
+import { useLazyRail } from "@composables/lazy-rail";
 import bannerUrl from "@assets/images/banner.webp";
 import logoUrl from "@assets/images/logo.png";
 
@@ -66,6 +72,8 @@ setHead({
 });
 
 const route = useRoute();
+
+const { ready: sidebarReady } = useLazyRail();
 
 // hero 副标题用原 banner 的副标题文案（"音无结弦之时，悦动天使之心"）
 const subtitleFull = siteConfig.banner?.subtitle?.text || siteConfig.subtitle;

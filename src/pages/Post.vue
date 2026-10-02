@@ -151,8 +151,13 @@
           </section>
         </div>
 
-        <!-- 右侧 TOC 侧边栏（sticky；窄屏隐藏） -->
-        <aside v-if="headings.length" class="post__aside">
+        <!--
+          右侧 TOC 侧边栏（sticky；窄屏隐藏）。
+          延迟挂载：目录要给 50+ 个标题挂 IntersectionObserver 并持续响应滚动，
+          放到空闲时再挂，避免和正文首屏渲染抢主线程。
+          media 与下面的 display:none 断点严格对齐，窄屏下根本不挂载。
+        -->
+        <aside v-if="headings.length && tocReady" class="post__aside">
           <Toc :headings="headings" />
         </aside>
       </div>
@@ -179,11 +184,15 @@ import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
 import { hydrateGithubCards } from "@lib/github-card";
 import { hydrateMermaid } from "@lib/mermaid-view";
+import { useLazyRail } from "@composables/lazy-rail";
 
 const route = useRoute();
 const toLink = toRouterLink;
 const html = ref("");
 const headings = ref<TocHeading[]>([]);
+
+// 目录延迟挂载；断点与 .post__aside 的 display:none 保持一致
+const { ready: tocReady } = useLazyRail({ media: "(min-width: 1081px)" });
 
 /** 从渲染后的 HTML 提取标题（h2/h3/h4）生成目录 */
 function extractHeadings(htmlStr: string): TocHeading[] {
