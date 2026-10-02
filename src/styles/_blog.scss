@@ -1063,6 +1063,366 @@
 }
 
 /* ---------- 番剧 ---------- */
+/* ---------- 番剧：与别人的重合（BangumiCompare.vue） ----------
+   放在 .bangumi__tabs 之前，所以这里把与上方页头的间距也一并给出 */
+.bgm-fold {
+  margin-top: var(--space-10);
+  padding: var(--space-10);
+  border-radius: var(--ll-radius-card);
+  border: 1px solid var(--site-card-border);
+  background: var(--md-sys-color-surface-container-low);
+}
+.bgm-fold__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-7);
+}
+.bgm-fold__badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.bgm-fold__title {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.bgm-fold__sub {
+  margin-top: var(--space-2);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: 1.7;
+}
+.bgm-fold__sub strong {
+  color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+/* 输入行：沿用 .search__box 的口径（52px / large 圆角 / focus-within 变主色） */
+.bgm-fold__search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-9);
+  padding: 0 var(--space-6) 0 var(--space-8);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--site-card);
+  transition: border-color var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.bgm-fold__search:focus-within {
+  border-color: var(--md-sys-color-primary);
+}
+.bgm-fold__search-icon {
+  flex: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.bgm-fold__input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-family: inherit;
+  font-size: var(--md-sys-typescale-body-medium-size);
+}
+.bgm-fold__input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+}
+.bgm-fold__input:disabled {
+  cursor: progress;
+}
+.bgm-fold__clear {
+  display: inline-flex;
+  flex: none;
+  padding: var(--space-2);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.bgm-fold__clear:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+/* 按钮行内变体：输入框高、右侧不留白（窄屏由下方媒体查询接管） */
+.bgm-fold__submit {
+  flex: none;
+  height: 40px;
+  padding: 0 var(--space-9);
+  margin-right: calc(var(--space-3) * -1);
+}
+.bgm-fold__submit:disabled {
+  cursor: progress;
+}
+.bgm-fold__spin {
+  animation: bgm-fold-spin 900ms linear infinite;
+}
+@keyframes bgm-fold-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* 示例胶囊：MD3 assist chip 口径 */
+.bgm-fold__examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.bgm-fold__examples-label {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-small-size);
+}
+.bgm-fold__example {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-6);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: var(--md-sys-typescale-label-small-size);
+  cursor: pointer;
+  transition: background var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.bgm-fold__example:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+.bgm-fold__status:not(:empty) {
+  margin-top: var(--space-6);
+  color: var(--md-sys-color-error);
+  font-size: var(--md-sys-typescale-body-small-size);
+}
+.bgm-fold__result {
+  margin-top: var(--space-9);
+}
+.bgm-fold__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.bgm-fold__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-small-size);
+}
+.bgm-fold__stat--primary {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 600;
+}
+.bgm-fold__caption {
+  margin-top: var(--space-5);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-small-size);
+}
+.bgm-fold__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-5);
+}
+.bgm-fold__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-5);
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font-family: inherit;
+  font-size: var(--md-sys-typescale-label-small-size);
+  cursor: pointer;
+}
+.bgm-fold__toggle:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+.bgm-fold__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--ll-gap);
+  margin-top: var(--space-8);
+}
+/* 结果卡：与 .bangumi__card 同一套 MD3 口径（state layer + elevation） */
+.bgm-fold__card {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  border-radius: var(--ll-radius-tile);
+  overflow: hidden;
+  background: var(--site-card);
+  border: 1px solid var(--site-card-border);
+  box-shadow: var(--site-elev-1);
+  transition: transform var(--md-sys-motion-duration-short)
+      var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short);
+}
+.bgm-fold__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-below);
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short)
+    var(--md-sys-motion-easing-standard);
+}
+.bgm-fold__card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--site-elev-2);
+}
+.bgm-fold__card:hover::before {
+  opacity: 0.08;
+}
+.bgm-fold__card-img {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: var(--md-sys-color-surface-container-high);
+}
+.bgm-fold__card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bgm-fold__card-info {
+  padding: var(--space-5) var(--space-6) var(--space-6);
+}
+.bgm-fold__card-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 双人评分：我（主色）/ TA（tertiary），配色只走 token，暗色自动跟随 */
+.bgm-fold__rates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.bgm-fold__rate {
+  padding: 1px var(--space-4);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bgm-fold__rate--mine {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.bgm-fold__rate--theirs {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+.bgm-fold__gap {
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.bgm-fold__gap--mine {
+  color: var(--md-sys-color-primary);
+}
+.bgm-fold__gap--theirs {
+  color: var(--md-sys-color-tertiary);
+}
+.bgm-fold__comment {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--site-card-border);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: 1.6;
+}
+/* 卡片默认是 <a>，展开的短评不能继承正文链接色（否则整段变蓝） */
+.bgm-fold__card .bgm-fold__comment,
+.bgm-fold__card .bgm-fold__comment-who {
+  color: var(--md-sys-color-on-surface-variant);
+}
+.bgm-fold__comment-who {
+  display: inline-block;
+  min-width: 20px;
+  margin-right: var(--space-3);
+  color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+.bgm-fold__comment--none {
+  border-top: none;
+  padding-top: 0;
+}
+.bgm-fold__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-9);
+  padding: var(--space-12) var(--space-8);
+  border-radius: var(--ll-radius-tile);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: center;
+}
+.bgm-fold__empty .app-icon {
+  color: var(--md-sys-color-outline);
+}
+.bgm-fold__empty-title {
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  font-weight: 600;
+}
+.bgm-fold__empty-tip {
+  max-width: 40em;
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: 1.7;
+}
+.bgm-fold__more {
+  display: flex;
+  margin: var(--space-9) auto 0;
+}
+/* 骨架：复用 .bangumi__sk-* 的 md-pulse 节奏 */
+.bgm-fold__card--skeleton {
+  pointer-events: none;
+}
+.bgm-fold__sk-img {
+  aspect-ratio: 3 / 4;
+  background: var(--md-sys-color-surface-container-high);
+  animation: md-pulse 1.4s ease-in-out infinite;
+}
+.bgm-fold__sk-line {
+  height: 12px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container-high);
+  animation: md-pulse 1.4s ease-in-out infinite;
+}
+.bgm-fold__sk-line--pill {
+  width: 60%;
+  margin-top: var(--space-4);
+}
+
 /* 原 .bangumi__source-* 一组（数据源切换卡片）已移除：
    页面只有一个 Bangumi 数据源，均分改由 .page__meta 胶囊承载 */
 .bangumi__tabs {
@@ -1392,6 +1752,55 @@
   }
 }
 
+
+/* 窄屏：输入框独占一行，按钮贴右，避免 52px 行内挤成一团 */
+@media (max-width: 600px) {
+  .bgm-fold {
+    padding: var(--space-8);
+  }
+  /* 窄屏：图标 + 输入定格第一行，清空 / 按钮换到第二行右对齐 */
+  .bgm-fold__search {
+    flex-wrap: wrap;
+    padding: var(--space-5) var(--space-6) var(--space-6) var(--space-8);
+    row-gap: var(--space-5);
+  }
+  .bgm-fold__search-icon {
+    order: 1;
+  }
+  .bgm-fold__input {
+    order: 2;
+    flex: 1 1 120px;
+    height: 40px;
+  }
+  .bgm-fold__clear {
+    order: 3;
+    margin-left: auto;
+  }
+  .bgm-fold__submit {
+    order: 4;
+    margin-right: 0;
+    margin-left: 0;
+  }
+  .bgm-fold__grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-7);
+  }
+}
+
+/* 动效降级：骨架 / 旋转图标停止动画，卡片位移取消 */
+@media (prefers-reduced-motion: reduce) {
+  .bgm-fold__spin,
+  .bgm-fold__sk-img,
+  .bgm-fold__sk-line {
+    animation: none;
+  }
+  .bgm-fold__card,
+  .bgm-fold__card:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* ============================================================
    aspect-ratio 降级（Chromium < 88 不支持该属性）
    用 padding-top 百分比占位还原宽高比 —— 百分比按「包含块宽度」计算，
@@ -1429,7 +1838,9 @@
   .side-bgm__item,
   .side-bgm__skeleton,
   .bangumi__card-img,
-  .bangumi__sk-img {
+  .bangumi__sk-img,
+  .bgm-fold__card-img,
+  .bgm-fold__sk-img {
     height: 0;
     padding-top: 133.3333%;
   }
@@ -1438,7 +1849,8 @@
     position: relative;
   }
   .side-bgm__item img,
-  .bangumi__card-img img {
+  .bangumi__card-img img,
+  .bgm-fold__card-img img {
     position: absolute;
     top: 0;
     left: 0;

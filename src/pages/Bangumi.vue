@@ -14,6 +14,9 @@
       </p>
     </header>
 
+    <!-- 和别人的番剧重合：输入对方的 Bangumi 页面地址即可比对（客户端专属，不参与 SSG） -->
+    <BangumiCompare />
+
     <!-- 状态筛选（Varlet tabs） -->
     <div v-if="items.length" class="bangumi__tabs">
       <var-tabs
@@ -73,6 +76,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
+import BangumiCompare from "@components/BangumiCompare.vue";
 import { setHead } from "@lib/head";
 import snapshot from "@/data/bangumi.json";
 

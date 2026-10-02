@@ -53,7 +53,10 @@
 
 - **文章**：`src/content/posts/*.md`（`import.meta.glob` 构建期内联）+ 自研 frontmatter 解析（不依赖 Node Buffer，SSR/浏览器同构）
 - **渲染**：markdown-it + shiki 双主题高亮、`:::tip` 等提示块、`::github{repo}` 仓库卡、`:spoiler[]` 剧透
-- **页面**：首页（Hero + 文章流 + 侧栏 + 分页）、文章页（TOC / 上下篇 / 相关+随机推荐 / Giscus 评论）、归档、标签、分类、搜索（全文）、关于、友链、番剧（Bangumi API + 图源切换）、动态（Moments Worker）、404
+- **页面**：首页（Hero + 文章流 + 侧栏 + 分页）、文章页（TOC / 上下篇 / 相关+随机推荐 / Giscus 评论）、归档、标签、分类、搜索（全文）、关于、友链、番剧（Bangumi API + **与别人的番剧重合对比**）、动态（Moments Worker）、404
+- **番剧重合**：`/bangumi` 顶部输入对方的 Bangumi 主页 / 用户名 / UID（或带用户名的 /bangumi 页面地址），
+  拉取 TA 标记为「看过」的动画，与本站主人在 Bangumi 上「看过」的条目取交集，按双方评分排序展示；
+  结果用 `?bgm=<uid>` 回写地址栏，链接可直接分享（标识解析与统计口径见 `src/lib/bangumi-compare.ts`）
 - **工程**：Vite SSG 预渲染（`scripts/ssg.mjs`）、sitemap.xml / rss.xml（`scripts/sitemap-rss.mjs`）、i18n 多语言、亮暗主题（localStorage + 跟随系统）、Cloudflare Workers 部署
 
 ---
@@ -67,9 +70,10 @@ src/
   components/
     layout/{AppBar,Footer,Layout,Sidebar}.vue   # 模板 UI 的 Vue 化
     {PostCard,PostList,Pagination,Toc,Giscus,ScrollProgress,AppIcon}.vue
+    BangumiCompare.vue          # /bangumi 的「和 TA 的重合番剧」输入框 + 结果网格
   composables/reveal.ts      # v-reveal 滚动入场指令（含 SSR props）
   pages/                     # Home/Post/Archive/Tag/Category/Search/About/Friends/Bangumi/Memos/NotFound
-  lib/                       # posts / markdown / frontmatter / theme / head
+  lib/                       # posts / markdown / frontmatter / theme / head / bangumi-compare（重合比对）
   utils/ constants/ i18n/ types/
   content/posts/*.md         # 文章
   content/spec/*.md          # 关于、友链等独立页
