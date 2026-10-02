@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import AppIcon from "@components/AppIcon.vue";
 import Giscus from "@components/Giscus.vue";
@@ -178,6 +178,7 @@ import { getTagUrl, toRouterLink } from "@utils/url-utils";
 import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
 import { hydrateGithubCards } from "@lib/github-card";
+import { hydrateMermaid } from "@lib/mermaid-view";
 
 const route = useRoute();
 const toLink = toRouterLink;
@@ -266,6 +267,21 @@ function setPostHead(p: typeof post.value) {
   });
 }
 
+/** 正文插入 DOM 后的客户端增强（GitHub 卡片 / Mermaid 图表），幂等可重复调用 */
+function hydrateEnhancements() {
+  hydrateGithubCards();
+  void hydrateMermaid();
+}
+
+/*
+  正文变化后、DOM 真正更新完成时再做客户端增强。
+  必须用 flush: "post"，不能用 nextTick()：本组件是含顶层 await 的异步 setup，
+  setup 期间调用的 nextTick 会在 Vue 挂载/打补丁之前就 resolve，此刻正文还没写进
+  DOM（查询结果为 0），首屏的 GitHub 卡片会一直停在 "Waiting"，Mermaid 也不会渲染。
+  post 回调排在组件渲染之后，稳定拿得到正文。重复调用是幂等的。
+*/
+watch(html, () => hydrateEnhancements(), { flush: "post" });
+
 async function render() {
   html.value = "";
   headings.value = [];
@@ -274,7 +290,6 @@ async function render() {
   if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
-    void nextTick(() => hydrateGithubCards());
   }
   setPostHead(post.value);
 }
@@ -293,7 +308,6 @@ if (post.value) {
   if (rendered) {
     html.value = rendered;
     headings.value = extractHeadings(rendered);
-    void nextTick(() => hydrateGithubCards());
   }
 }
 </script>

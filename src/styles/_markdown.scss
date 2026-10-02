@@ -392,3 +392,69 @@ html[data-theme="dark"] .markdown-body blockquote.admonition.bdm-note {
     --admonition-bg: color-mix(in srgb, oklch(55% 0.19 27) 10%, transparent);
   }
 }
+
+/* ============================================================
+   数学公式（KaTeX）与 Mermaid 图表
+   KaTeX 自身的排版样式来自 katex.min.css（见 src/app.ts 引入），
+   这里只补本站正文需要的容器行为；Mermaid 由客户端渲染成 SVG。
+   ============================================================ */
+
+/* ---- KaTeX 数学公式（$...$ / $$...$$ / ```math） ---- */
+.markdown-body {
+  .math-display,
+  .katex-display {
+    margin: 1.2em 0;
+    // 宽公式（矩阵 / 多行推导）不撑破版心，改为块内横向滚动
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.2em 0;
+  }
+  .katex-display > .katex {
+    // 滚动容器内保持公式原始宽度，不压缩换行
+    white-space: nowrap;
+  }
+  // 行内公式略缩小，与正文行高更协调
+  .katex {
+    font-size: 1.05em;
+  }
+  .katex-display .katex {
+    font-size: 1.15em;
+  }
+
+  /* ---- Mermaid 图表（```mermaid，客户端渲染为 SVG） ---- */
+  pre.mermaid {
+    // 渲染前是源码、渲染后是 SVG，共用同一个卡片容器
+    margin: 1.2em 0;
+    padding: 1.1em 1.3em;
+    border-radius: var(--md-sys-shape-corner-medium);
+    background: var(--md-sys-color-surface-container);
+    box-shadow: var(--md-sys-elevation-1);
+    overflow-x: auto;
+    line-height: 1.6;
+    text-align: center;
+    // 未渲染时按源码展示，字体与代码块一致
+    font-family: var(--md-font-code);
+    font-size: 0.875rem;
+    // 渲染完成后交回 mermaid 自己的字体（SVG 内已内联 fontFamily）
+    &[data-mermaid-rendered] {
+      font-family: inherit;
+    }
+    svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+  }
+  // Mermaid 渲染失败：保留源码可读，不静默变成空白
+  pre.mermaid.mermaid-error {
+    border: 1px dashed var(--md-sys-color-error);
+    text-align: left;
+  }
+}
+
+/* 与其他横向滚动容器保持同口径的滚动条高度 */
+.markdown-body .katex-display::-webkit-scrollbar,
+.markdown-body pre.mermaid::-webkit-scrollbar {
+  height: 8px;
+}

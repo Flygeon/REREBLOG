@@ -5,6 +5,9 @@
  *  1. 代码高亮：shiki（双主题，随 data-theme 切换明/暗）
  *  2. :::tip / :::note / :::important / :::caution / :::warning  —— 提示块（blockquote.admonition）
  *  3. ::github{repo="owner/repo"}  —— GitHub 仓库卡片（运行时 fetch api.github.com）
+ *  4. $...$ / $$...$$ / ```math —— KaTeX 数学公式（构建期/运行时同步渲染，无客户端依赖）
+ *  5. ```mermaid —— Mermaid 图表（构建期仅输出 <pre class="mermaid"> 源码，
+ *     由客户端 mermaid-view.ts 按需 import() mermaid 再渲染）
  *
  * 与 Astro 不同：markdown-it 是同步渲染，shiki 高亮器在首次调用前异步预热，
  * 之后 highlight 回调同步使用已加载的高亮器。
@@ -12,6 +15,8 @@
 import MarkdownIt from "markdown-it";
 import { createHighlighterCore, type HighlighterCore } from "shiki/core";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
+import texmath from "markdown-it-texmath";
+import katex from "katex";
 
 const MD_THEME_LIGHT = "github-light";
 const MD_THEME_DARK = "github-dark";
@@ -53,7 +58,44 @@ const md = new MarkdownIt({
 	linkify: true,
 	typographer: true,
 	breaks: false,
-}).use(directivePlugin);
+})
+	// KaTeX 数学：仅启用 dollars（$...$ / $$...$$）与 math 围栏。
+	// 不启用 brackets(\(...\)) / beg_end，避免与正文里的普通括号、LaTeX 环境
+	// 混排产生误匹配。throwOnError 置 false —— 公式写错时 KaTeX 会渲染成红字
+	// 而不是抛异常中断整篇渲染。
+	.use(texmath, {
+		engine: katex,
+		delimiters: "dollars",
+		katexOptions: { throwOnError: false },
+	})
+	.use(directivePlugin);
+
+/* --------------------- 围栏块：Mermaid / Math --------------------- */
+// 默认 fence 规则（内部会读取 options.highlight，即上面的 shiki 回调）。
+// 这里只在 info 命中 mermaid / math 时接管，其余语言原样交回，避免影响 shiki。
+const defaultFence = md.renderer.rules.fence!;
+
+md.renderer.rules.fence = (tokens: any[], idx: number, options: any, env: any, self: any) => {
+	const token = tokens[idx];
+	const lang = (token.info || "").trim().split(/\s+/)[0].toLowerCase();
+
+	// ```mermaid —— 构建期只输出源码骨架，由客户端 mermaid-view.ts 按需渲染。
+	// 用 <pre> 保留源码中的换行/缩进，textContent 即完整的 mermaid 定义。
+	if (lang === "mermaid") {
+		return '<pre class="mermaid">' + escapeHtml(token.content) + "</pre>\n";
+	}
+
+	// ```math / ```latex / ```tex —— 围栏形式的块级公式，交给 KaTeX。
+	if (lang === "math" || lang === "latex" || lang === "tex") {
+		const html = katex.renderToString(token.content.trim(), {
+			displayMode: true,
+			throwOnError: false,
+		});
+		return '<div class="math-display">' + html + "</div>\n";
+	}
+
+	return defaultFence(tokens, idx, options, env, self);
+};
 
 /* ------------------------- 标题 anchor 支持 ------------------------- */
 // 为 h1-h4 生成 slug id（供阅读目录 TOC 锚点跳转）。

@@ -33,11 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { ref, watch } from "vue";
 import AppIcon from "@components/AppIcon.vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
 import { hydrateGithubCards } from "@lib/github-card";
+import { hydrateMermaid } from "@lib/mermaid-view";
 
 const html = ref("");
 
@@ -49,9 +50,18 @@ setHead({
     "Flygeonの小站 的友情链接页面：收录朋友们的小站，欢迎留言交换友链，一起在互联网上互相串门。",
 });
 
+/* 同 About.vue：用 flush: "post" 保证正文已进 DOM（异步 setup 下 nextTick 过早） */
+watch(
+  html,
+  () => {
+    hydrateGithubCards();
+    void hydrateMermaid();
+  },
+  { flush: "post" },
+);
+
 if (spec) {
   html.value = (await getSpecHtml("friends")) ?? "";
-  void nextTick(() => hydrateGithubCards());
 }
 
 // 友链数据（对齐原 friends.astro 的 items）

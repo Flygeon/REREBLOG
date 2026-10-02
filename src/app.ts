@@ -9,6 +9,9 @@ import "@varlet/ui/es/pagination/style/index.mjs";
 import "@varlet/ui/es/tabs/style/index.mjs";
 import "@varlet/ui/es/tab/style/index.mjs";
 import "@varlet/ui/es/style-provider/style/index.mjs";
+// KaTeX 公式样式与字体：公式排版依赖它，缺失时公式会退化成乱排的文本。
+// 字体经 Vite 处理为 dist/assets 下的 woff2/woff/ttf。
+import "katex/dist/katex.min.css";
 // 图标字体走 styles/_icons.scss 的自托管子集（Material Symbols，不使用 emoji / 字符箭头）
 import "./styles/main.scss";
 import { reveal } from "@composables/reveal";
