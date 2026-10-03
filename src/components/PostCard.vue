@@ -27,7 +27,7 @@
           class="post-card__pin"
           name="push_pin"
           :size="16"
-          title="置顶"
+          :title="i18n(I18nKey.pinned)"
         />
         <RouterLink class="post-card__title" :to="toLink(url)">
           {{ title }}
@@ -46,7 +46,7 @@
           {{ category }}
         </RouterLink>
         <span v-if="updated && updated > published" class="post-card__updated">
-          更新于 {{ formatDate(updated) }}
+          {{ i18nFormat(I18nKey.updatedAt, { date: formatDate(updated) }) }}
         </span>
       </div>
 
@@ -83,7 +83,7 @@
       v-if="!image"
       class="post-card__rail"
       :to="toLink(url)"
-      :aria-label="`阅读文章：${title}`"
+      :aria-label="i18nFormat(I18nKey.readPost, { title })"
     >
       <AppIcon name="arrow_forward" :size="24" />
     </RouterLink>
@@ -96,7 +96,7 @@ import AppIcon from "@components/AppIcon.vue";
 import type { Post } from "@utils/content-utils";
 import { getCategoryUrl, getTagUrl, toRouterLink } from "@utils/url-utils";
 import I18nKey from "@i18n/i18nKey";
-import { i18n } from "@i18n/translation";
+import { i18n, i18nFormat } from "@i18n/translation";
 
 const props = defineProps<{
   post: Post;

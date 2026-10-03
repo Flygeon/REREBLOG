@@ -19,8 +19,12 @@ const root = path.resolve(__dirname, "..");
 const distDir = path.join(root, "dist");
 const ssrEntry = path.join(root, "dist-ssr", "entry-server.js");
 
-// 站点绝对地址（与 src/lib/head.ts 的 SITE_URL、sitemap-rss.mjs 保持一致）
-const SITE_URL = "https://flygeon.top";
+// 站点绝对地址：单一真源 site.meta.json（src/lib/head.ts、sitemap-rss.mjs 同源；
+// 一致性由 scripts/check-site-meta.mjs 断言）
+const siteMeta = JSON.parse(
+	fs.readFileSync(path.join(root, "site.meta.json"), "utf8"),
+);
+const SITE_URL = siteMeta.siteUrl;
 const DEFAULT_OG_IMAGE = `${SITE_URL}/favicon/favicon-light-192.png`;
 
 function escapeAttr(s) {
@@ -125,6 +129,17 @@ function composeHtml(template, appHtml, head, routeUrl = "/") {
 	// canonical 与 og:url 同源：所有页面都注入，消除重复内容歧义
 	inject.push(
 		`<link rel="canonical" href="${escapeAttr(absolute(head.url || routeUrl))}">`,
+	);
+
+	/*
+	  RSS autodiscovery。
+	  scripts/sitemap-rss.mjs 一直在产出 dist/rss.xml，但此前没有任何页面引用它，
+	  浏览器/阅读器无法自动发现订阅源（robots.txt 里也只声明了 sitemap）。
+	  这里给每一页注入 <link rel="alternate" type="application/rss+xml">，
+	  订阅者从任意页面都能一键订阅。
+	*/
+	inject.push(
+		`<link rel="alternate" type="application/rss+xml" title="${escapeAttr(siteMeta.siteTitle)}" href="${escapeAttr(absolute("/rss.xml"))}">`,
 	);
 
 	if (head.jsonLd) {

@@ -25,37 +25,13 @@
       name="description"
       content="Flygeon の个人博客：分享 Web 开发与自建项目（Vue 3 自建 SSG 博客、Cloudflare Workers 动态服务），也记录 Bangumi 追番、设计与日常碎碎念。"
     />
-    <!-- Noto Sans SC：正文+标题用。字体走自托管 /cf-fonts 分片（Google Fonts CSS
-         仅作异步兜底），media=print 异步加载不阻塞首屏；font-display swap 避免 FOIT。
-         preload 首屏实际命中的两个高频汉字分片（119/117），缩短字体交换窗口。 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="font"
-      type="font/woff2"
-      crossorigin
-      href="/cf-fonts/v/noto-sans-sc/5.2.9/119/wght/normal.woff2"
-    />
-    <link
-      rel="preload"
-      as="font"
-      type="font/woff2"
-      crossorigin
-      href="/cf-fonts/v/noto-sans-sc/5.2.9/117/wght/normal.woff2"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
-      />
-    </noscript>
+    <!--
+      Noto Sans SC 正文字体走自托管子集（见 src/styles/_fonts.scss），
+      由 Vite 打进 /assets 并带内容哈希，@font-face 在首屏 CSS 里。
+      这里刻意不再引 Google Fonts 的 <link>：Cloudflare Fonts 会把 Google
+      返回的 404 条 @font-face（369KB）原样内联进 HTML，变成渲染阻塞资源，
+      HTML 从 121KB 涨到 490KB，首屏字体流量还要 1MB+。
+    -->
     <!-- 主题初始化：在首屏渲染前写入 data-theme，避免暗色模式闪烁 -->
     <script>
       (function () {

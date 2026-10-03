@@ -12,9 +12,19 @@
     "build:ssg": "node scripts/clean.mjs && node scripts/bangumi.mjs && vite build --config vite.ssr.config.ts && node scripts/render-content.mjs && vite build && node scripts/ssg.mjs && node scripts/sitemap-rss.mjs",
     "build:client": "vite build",
     "build:ssr": "vite build --config vite.ssr.config.ts",
-    "preview": "vite preview",
+    "preview": "node scripts/preview.mjs",
     "deploy": "pnpm build && wrangler deploy",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check:all": "pnpm check:site-meta && pnpm check:routes && pnpm check:i18n && pnpm lint",
+    "check:site-meta": "node scripts/check-site-meta.mjs",
+    "check:routes": "node scripts/check-routes.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "test": "playwright test",
+    "test:a11y": "playwright test tests/a11y.spec.ts",
+    "test:ui": "playwright test tests/code-copy.spec.ts",
+    "verify": "pnpm check:all && pnpm type-check && pnpm build && pnpm test"
   },
   "dependencies": {
     "@varlet/ui": "^3.6.2",
@@ -29,9 +39,14 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@biomejs/biome": "^2.5.15",
+    "@playwright/test": "^1.49.1",
+    "@types/markdown-it": "^14.2.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/compiler-sfc": "^3.5.13",
     "@vue/server-renderer": "^3.5.13",
+    "axe-core": "^4.13.0",
     "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.0",
     "sass": "^1.83.0",

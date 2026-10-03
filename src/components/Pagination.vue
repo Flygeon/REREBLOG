@@ -1,11 +1,18 @@
 <template>
   <div class="pagination">
+    <!--
+      show-size-changer=false：Varlet 的「每页条数」选择器会往 <ul> 里塞一个 <div>
+      （menu-select 的挂载点），而 <ul> 只允许直接子元素为 <li>，axe 的 list 规则会判
+      serious 违规。此前用 CSS display:none 隐藏，DOM 仍在，违规照报；这里从源头关掉，
+      节点根本不渲染。
+    -->
     <var-pagination
       :current="currentPage"
       :total="totalItems"
       :size="size"
       :max-pager-count="5"
       :simple="false"
+      :show-size-changer="false"
       :elevation="false"
       @change="go"
     />
@@ -50,7 +57,7 @@ function pageUrl(p: number): string {
   justify-content: center;
   padding: 24px 0;
 }
-/* 隐藏 Varlet 自带的每页条数选择器（"N条 / 页"），页码由路由控制 */
+/* 兜底：即使 show-size-changer 失效导致节点仍被渲染，也不让它显示（页码由路由控制） */
 .pagination :deep(.var-pagination__size) {
   display: none;
 }

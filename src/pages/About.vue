@@ -2,8 +2,8 @@
   <div class="container">
     <header class="page__header">
       <div class="eyebrow">About</div>
-      <h1 class="section-title">关于</h1>
-      <p class="section-sub">关于站长、这个小站与它的技术构成。</p>
+      <h1 class="section-title">{{ i18n(I18nKey.about) }}</h1>
+      <p class="section-sub">{{ i18n(I18nKey.aboutSubtitle) }}</p>
     </header>
 
     <article class="markdown-body" v-html="html"></article>
@@ -14,6 +14,8 @@
 import { ref, watch } from "vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 import { hydrateGithubCards } from "@lib/github-card";
 import { hydrateMermaid } from "@lib/mermaid-view";
 

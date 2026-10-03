@@ -22,16 +22,23 @@
           </div>
         </section>
 
+        <!--
+          h1 视觉隐藏：博客列表页此前没有一级标题（axe page-has-heading-one 违规），
+          但设计上首屏是 Hero 而非标题，不能把 h1 显示出来抢视觉。
+          用 .visually-hidden 保留大纲语义、屏幕上不可见。
+        -->
+        <h1 class="visually-hidden">{{ i18n(I18nKey.blogListTitle) }}</h1>
+
         <!-- 文章列表标题行：无过滤时显示总数；有过滤时显示筛选条件 -->
         <div class="post-list__head">
           <h2 class="post-list__title">
-            {{ hasFilter ? "筛选结果" : "最新文章" }}
+            {{ hasFilter ? i18n(I18nKey.filterResult) : i18n(I18nKey.latestPosts) }}
           </h2>
           <span v-if="hasFilter" class="page__meta">{{ filterLabel }}</span>
-          <span v-else class="post-list__count">共 {{ allPosts.length }} 篇</span>
+          <span v-else class="post-list__count">{{ i18nFormat(I18nKey.postCount, { count: allPosts.length }) }}</span>
         </div>
 
-        <section class="post-list" aria-label="文章列表">
+        <section class="post-list" :aria-label="i18n(I18nKey.postList)">
           <PostCard
             v-for="post in pagePosts"
             :key="post.slug"
@@ -71,6 +78,8 @@ import { allPosts } from "@lib/posts";
 import { PAGE_SIZE } from "@constants/constants";
 import { siteConfig } from "@/config";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 import { useLazyRail } from "@composables/lazy-rail";
 import bannerUrl from "@assets/images/banner.webp";
 import logoUrl from "@assets/images/logo.png";
@@ -155,15 +164,15 @@ const filterLabel = computed(() => {
     const tags = Array.isArray(route.query.tag)
       ? route.query.tag
       : [route.query.tag];
-    parts.push(`标签：${tags.join(", ")}`);
+    parts.push(i18nFormat(I18nKey.filterByTag, { value: tags.join(", ") }));
   }
   if (route.query.category) {
     const cats = Array.isArray(route.query.category)
       ? route.query.category
       : [route.query.category];
-    parts.push(`分类：${cats.join(", ")}`);
+    parts.push(i18nFormat(I18nKey.filterByCategory, { value: cats.join(", ") }));
   }
-  if (route.query.uncategorized) parts.push("未分类");
+  if (route.query.uncategorized) parts.push(i18n(I18nKey.uncategorized));
   return parts.join(" / ");
 });
 

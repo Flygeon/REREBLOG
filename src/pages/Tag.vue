@@ -3,11 +3,11 @@
     <header class="page__header">
       <div class="eyebrow">Tag</div>
       <h1 class="section-title">
-        标签
+        {{ i18n(I18nKey.tagTitle) }}
         <span class="page__meta">#{{ decodedTag }}</span>
       </h1>
       <p class="section-sub">
-        标签「{{ decodedTag }}」下共 {{ taggedPosts.length }} 篇文章。
+        {{ i18nFormat(I18nKey.tagSummary, { tag: decodedTag, count: taggedPosts.length }) }}
       </p>
     </header>
 
@@ -21,6 +21,8 @@ import { useRoute } from "vue-router";
 import PostList from "@components/PostList.vue";
 import { allPosts } from "@lib/posts";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 
 const route = useRoute();
 

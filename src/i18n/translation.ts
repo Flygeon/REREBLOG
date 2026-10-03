@@ -46,3 +46,21 @@ export function i18n(key: I18nKey): string {
 	const lang = siteConfig.lang || "en";
 	return getTranslation(lang)[key];
 }
+
+/**
+ * 带占位符的翻译。
+ *
+ * 约定：占位符在**所有语种里保持同名同集合**（如 {count} / {query}），
+ * 由 scripts/check-i18n.mjs 断言，替换在消费侧完成。
+ * 缺失的占位符保留原样（而不是替换成 undefined），方便一眼看出漏配。
+ *
+ * @example i18nFormat(I18nKey.searchFound, { count: 12 })
+ */
+export function i18nFormat(
+	key: I18nKey,
+	params: Record<string, string | number>,
+): string {
+	return i18n(key).replace(/\{(\w+)\}/g, (raw, name: string) =>
+		name in params ? String(params[name]) : raw,
+	);
+}

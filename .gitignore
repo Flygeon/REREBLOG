@@ -19,6 +19,11 @@ src/generated/
 .workbuddy/
 _tmp_*
 
+# Playwright 产物（测试报告 / trace / 失败截图）
+test-results/
+playwright-report/
+blob-report/
+
 # ---- MDC-Web 模板遗留 ----
 # 这些是原始 HTML 模板（Material Components Web）自带的目录/文件，
 # 原始副本已归档到 _legacy/，不纳入本仓库。

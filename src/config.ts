@@ -66,7 +66,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+	avatar: "assets/images/avatar.webp", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "Flygeon",
 	bio: "音无结弦之时，悦动天使之心；\n立于浮华之世，奏响天籁之音。",
 	links: [

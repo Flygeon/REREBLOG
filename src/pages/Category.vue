@@ -3,11 +3,11 @@
     <header class="page__header">
       <div class="eyebrow">Category</div>
       <h1 class="section-title">
-        分类
+        {{ i18n(I18nKey.categoryTitle) }}
         <span class="page__meta">{{ decodedCategory }}</span>
       </h1>
       <p class="section-sub">
-        分类「{{ decodedCategory }}」下共 {{ categorizedPosts.length }} 篇文章。
+        {{ i18nFormat(I18nKey.categorySummary, { category: decodedCategory, count: categorizedPosts.length }) }}
       </p>
     </header>
 
@@ -21,6 +21,8 @@ import { useRoute } from "vue-router";
 import PostList from "@components/PostList.vue";
 import { allPosts } from "@lib/posts";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 
 const route = useRoute();
 

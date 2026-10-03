@@ -19,7 +19,7 @@
             @click="goBack"
           >
             <AppIcon name="arrow_back" :size="20" />
-            返回上一页
+            {{ i18n(I18nKey.backToPrev) }}
           </button>
 
           <!-- 文章头：栏目(eyebrow) → 标题 → 日期/字数 → 标签行 -->
@@ -61,7 +61,7 @@
               class="post__pager-link"
               :to="toLink(`/posts/${post.data.nextSlug}/`)"
             >
-              <span class="post__pager-label">下一篇</span>
+              <span class="post__pager-label">{{ i18n(I18nKey.nextPost) }}</span>
               <span class="post__pager-title">{{ post.data.nextTitle }}</span>
             </RouterLink>
             <RouterLink
@@ -69,7 +69,7 @@
               class="post__pager-link post__pager-link--next"
               :to="toLink(`/posts/${post.data.prevSlug}/`)"
             >
-              <span class="post__pager-label">上一篇</span>
+              <span class="post__pager-label">{{ i18n(I18nKey.prevPost) }}</span>
               <span class="post__pager-title">{{ post.data.prevTitle }}</span>
             </RouterLink>
           </nav>
@@ -78,10 +78,10 @@
           <section
             v-if="recommended.length || randomPosts.length"
             class="post__related"
-            aria-label="文章推荐"
+            :aria-label="i18n(I18nKey.relatedPosts)"
           >
             <div class="post__related-head">
-              <h2 class="post__related-title">继续阅读</h2>
+              <h2 class="post__related-title">{{ i18n(I18nKey.readMore) }}</h2>
               <AppIcon
                 class="post__related-title-icon"
                 name="auto_stories"
@@ -105,7 +105,7 @@
                     loading="lazy"
                   />
                   <AppIcon v-else name="article" :size="30" />
-                  <span class="rec-card__badge">相关</span>
+                  <span class="rec-card__badge">{{ i18n(I18nKey.badgeRelated) }}</span>
                 </div>
                 <div class="rec-card__body">
                   <div class="rec-card__title">{{ p.data.title }}</div>
@@ -139,7 +139,7 @@
                     loading="lazy"
                   />
                   <AppIcon v-else name="shuffle" :size="30" />
-                  <span class="rec-card__badge rec-card__badge--rand">随机</span>
+                  <span class="rec-card__badge rec-card__badge--rand">{{ i18n(I18nKey.badgeRandom) }}</span>
                 </div>
                 <div class="rec-card__body">
                   <div class="rec-card__title">{{ p.data.title }}</div>
@@ -179,9 +179,9 @@
     </template>
 
     <div v-else class="placeholder">
-      <h1>文章未找到</h1>
-      <p>你访问的文章可能已被删除或不存在。</p>
-      <RouterLink to="/">返回首页</RouterLink>
+      <h1>{{ i18n(I18nKey.postNotFound) }}</h1>
+      <p>{{ i18n(I18nKey.postNotFoundDesc) }}</p>
+      <RouterLink to="/">{{ i18n(I18nKey.backToHome) }}</RouterLink>
     </div>
   </div>
 </template>
@@ -197,8 +197,11 @@ import { allPosts, getPostBody, getPostHtml, mdToText } from "@lib/posts";
 import { getTagUrl, toRouterLink } from "@utils/url-utils";
 import { getRecommendedPosts, getRandomPosts } from "@utils/content-utils";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 import { hydrateGithubCards } from "@lib/github-card";
 import { hydrateMermaid } from "@lib/mermaid-view";
+import { hydrateCodeCopy, setCodeCopyLabels } from "@lib/code-copy";
 import { useLazyRail } from "@composables/lazy-rail";
 
 const route = useRoute();
@@ -312,10 +315,17 @@ function setPostHead(p: typeof post.value) {
   });
 }
 
-/** 正文插入 DOM 后的客户端增强（GitHub 卡片 / Mermaid 图表），幂等可重复调用 */
+/** 正文插入 DOM 后的客户端增强（GitHub 卡片 / Mermaid 图表 / 代码复制），幂等可重复调用 */
 function hydrateEnhancements() {
   hydrateGithubCards();
   void hydrateMermaid();
+  // 复制按钮的提示文案同样走 i18n，避免在 lib 层再引一份翻译依赖
+  setCodeCopyLabels({
+    copy: i18n(I18nKey.copyCode),
+    copied: i18n(I18nKey.copiedCode),
+    failed: i18n(I18nKey.copyFailed),
+  });
+  hydrateCodeCopy();
 }
 
 /*

@@ -16,14 +16,21 @@ export interface HeadInfo {
 	type?: "website" | "article";
 }
 
+/*
+  站点常量单一真源：根目录 site.meta.json。
+  此前 SITE_URL / SITE_TITLE 在 head.ts、scripts/ssg.mjs、scripts/sitemap-rss.mjs
+  各内联一份（注释还写着"保持一致"），改一处必漏两处。
+  现在三处都读同一份清单，由 scripts/check-site-meta.mjs 断言一致。
+*/
+import siteMeta from "../../site.meta.json";
+
 /** 站点绝对地址（sitemap / RSS / OG 共用） */
-export const SITE_URL = "https://flygeon.top";
+export const SITE_URL: string = siteMeta.siteUrl;
 
 /** 全站标题后缀（各页面 title 以 | 拼接） */
-export const SITE_TITLE = "Flygeonの小站";
+export const SITE_TITLE: string = siteMeta.siteTitle;
 /** 全站默认描述：页面未提供 description 时兜底（SEO 建议 60~160 字符） */
-export const SITE_DESCRIPTION =
-	"Flygeon の个人博客：分享 Web 开发与自建项目（Vue 3 自建 SSG 博客、Cloudflare Workers 动态服务），也记录 Bangumi 追番、设计与日常碎碎念。";
+export const SITE_DESCRIPTION: string = siteMeta.siteDescription;
 
 let current: HeadInfo = {};
 

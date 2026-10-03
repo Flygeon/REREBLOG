@@ -1,4 +1,7 @@
-export const PAGE_SIZE = 8;
+// 分页大小：单一真源见根目录 site.meta.json（scripts/sitemap-rss.mjs 同源读取）
+import siteMeta from "../../site.meta.json";
+
+export const PAGE_SIZE: number = siteMeta.pageSize;
 
 export const LIGHT_MODE = "light",
 	DARK_MODE = "dark",

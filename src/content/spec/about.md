@@ -1,4 +1,4 @@
-# 关于我
+## 关于我
 :spoiler[~~公的喵，目前居住在地球喵~~]
 
 男 infp 来自安徽，目前高中在读，当然比较fvv就是了，社恐desu
@@ -10,7 +10,7 @@ Flygeon这个名字是由Fly和pigeon合成而来，因为我很鸽，再者飞�
 关于游戏的话我基本都沾点，音游，单机，gal，网游都有涉及。玩得多点的话大概有舞萌DX、pjsk、邦多利、APEX这些。单机比较喜欢P5R和东方夜雀食堂这俩。最喜欢的gal是近月少女的礼仪:spoiler[（~~我是露娜小姐的狗~~）]
 
 
-# 关于博客
+## 关于博客
  Fuwari仓库 [Fuwari](https://github.com/saicaca/fuwari).
 
 ::github{repo="saicaca/fuwari"}

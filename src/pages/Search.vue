@@ -2,8 +2,8 @@
   <div class="container">
     <header class="page__header">
       <div class="eyebrow">Search</div>
-      <h1 class="section-title">搜索</h1>
-      <p class="section-sub">按关键词检索文章标题、标签、分类与正文。</p>
+      <h1 class="section-title">{{ i18n(I18nKey.search) }}</h1>
+      <p class="section-sub">{{ i18n(I18nKey.searchSubtitle) }}</p>
     </header>
 
     <!-- 搜索输入 -->
@@ -13,15 +13,15 @@
         v-model="query"
         class="search__input"
         type="search"
-        placeholder="搜索文章标题、标签、正文…"
-        aria-label="搜索文章"
+        :placeholder="i18n(I18nKey.searchPlaceholder)"
+        :aria-label="i18n(I18nKey.searchArticle)"
         @input="onInput"
       />
       <button
         v-if="query"
         class="search__clear"
         type="button"
-        aria-label="清空搜索"
+        :aria-label="i18n(I18nKey.clearSearch)"
         @click="clear"
       >
         <AppIcon name="close" :size="16" />
@@ -30,7 +30,7 @@
 
     <!-- 结果统计 -->
     <p v-if="query" class="search__stats" aria-live="polite">
-      找到 {{ results.length }} 篇文章
+      {{ i18nFormat(I18nKey.searchFound, { count: results.length }) }}
     </p>
 
     <!-- 结果列表 / 无结果：AnimatePresence 做 enter/exit，消除「消失瞬切」 -->
@@ -55,17 +55,17 @@
       >
         <div class="search__empty">
           <AppIcon class="search__empty-icon" name="search" :size="40" />
-          <p class="search__empty-title">没有找到与「{{ query }}」相关的文章。</p>
-          <p class="search__empty-tip">换个关键词，或看看下方的热门标签。</p>
+          <p class="search__empty-title">{{ i18nFormat(I18nKey.searchNoResult, { query }) }}</p>
+          <p class="search__empty-tip">{{ i18n(I18nKey.searchNoResultTip) }}</p>
         </div>
       </motion.div>
     </AnimatePresence>
 
     <!-- 空状态：未输入 -->
     <div v-if="!query" class="search__hint">
-      <p>输入关键词开始搜索。</p>
+      <p>{{ i18n(I18nKey.searchStart) }}</p>
       <div class="search__hot">
-        <span class="search__hot-label">热门标签：</span>
+        <span class="search__hot-label">{{ i18n(I18nKey.searchHotTags) }}</span>
         <a
           v-for="tag in hotTags"
           :key="tag.name"
@@ -89,6 +89,8 @@ import PostList from "@components/PostList.vue";
 import { allPosts, loadSearchCorpus } from "@lib/posts";
 import { getTagList } from "@utils/content-utils";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 
 const query = ref("");
 

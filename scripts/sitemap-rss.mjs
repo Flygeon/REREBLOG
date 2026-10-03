@@ -21,12 +21,17 @@ const root = path.resolve(__dirname, "..");
 const distDir = path.join(root, "dist");
 const postsDir = path.join(root, "src", "content", "posts");
 
-// 与原 config.ts 保持一致（这里无法 import TS，故内联关键常量）
-const SITE_URL = "https://flygeon.top"; // 部署域名
-const PAGE_SIZE = 8; // 与原 constants.ts 保持一致
-const SITE_TITLE = "Flygeonの小站";
-const SITE_SUBTITLE = "Flygeonの小站";
-const SITE_LANG = "zh_CN";
+// 站点常量：单一真源 site.meta.json
+// （此前这里内联一份、src/lib/head.ts 一份、scripts/ssg.mjs 一份，靠注释"保持一致"；
+//  现由 scripts/check-site-meta.mjs 断言同源）
+const siteMeta = JSON.parse(
+	fs.readFileSync(path.join(root, "site.meta.json"), "utf8"),
+);
+const SITE_URL = siteMeta.siteUrl; // 部署域名
+const PAGE_SIZE = siteMeta.pageSize;
+const SITE_TITLE = siteMeta.siteTitle;
+const SITE_SUBTITLE = siteMeta.siteSubtitle;
+const SITE_LANG = siteMeta.lang;
 
 // 首页 / 现在只是门户占位页；博客列表已迁到 /blog/（分页 /blog/N/，见下方 writeSitemap）
 const staticPaths = [

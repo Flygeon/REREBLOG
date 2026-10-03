@@ -3,14 +3,14 @@
     <header class="page__header">
       <div class="eyebrow">Bangumi</div>
       <h1 class="section-title">
-        番剧
+        {{ i18n(I18nKey.navBangumi) }}
         <span v-if="items.length" class="page__meta">
           <AppIcon name="star" :size="16" />
-          均分 {{ scoreLabel }}
+          {{ i18nFormat(I18nKey.bangumiAverage, { score: scoreLabel }) }}
         </span>
       </h1>
       <p class="section-sub">
-        整理我在 Bangumi 上的追番收藏：想看、在看和看过的番剧，以及我的评分与短评。
+        {{ i18n(I18nKey.bangumiSubtitle) }}
       </p>
     </header>
 
@@ -19,7 +19,7 @@
       随机数只能在客户端算（SSR 与客户端各算一次必然不同 → 水合不一致），
       因此 SSR 先渲染固定占位骨架，挂载后再随机挑选。
     -->
-    <section v-if="items.length" class="bangumi__spot" aria-label="随机推荐">
+    <section v-if="items.length" class="bangumi__spot" :aria-label="i18n(I18nKey.bangumiRandom)">
       <template v-if="spotlight">
         <a
           class="bangumi__spot-cover"
@@ -39,7 +39,7 @@
         </a>
 
         <div class="bangumi__spot-info">
-          <div class="bangumi__spot-eyebrow">随机一部 · 我的收藏</div>
+          <div class="bangumi__spot-eyebrow">{{ i18n(I18nKey.bangumiSpot) }}</div>
           <h2 class="bangumi__spot-title">{{ spotlight.name_cn || spotlight.name }}</h2>
           <p class="bangumi__spot-meta">
             <span class="bangumi__spot-badge">{{ statusLabel(spotlight.type) }}</span>
@@ -54,7 +54,7 @@
             @click="pickSpotlight"
           >
             <AppIcon name="shuffle" :size="16" />
-            换一部
+            {{ i18n(I18nKey.bangumiAnother) }}
           </button>
         </div>
       </template>
@@ -94,7 +94,7 @@
     </div>
 
     <!-- 卡片网格（SSG 预渲染即含数据，无需骨架屏） -->
-    <section v-if="items.length" class="bangumi__grid" aria-label="番剧收藏">
+    <section v-if="items.length" class="bangumi__grid" :aria-label="i18n(I18nKey.bangumiGrid)">
       <a
         v-for="item in filteredItems"
         :key="item.subject_id"
@@ -127,7 +127,7 @@
     </section>
 
     <!-- 空 -->
-    <div v-else class="bangumi__state">暂无番剧数据</div>
+    <div v-else class="bangumi__state">{{ i18n(I18nKey.bangumiEmpty) }}</div>
   </div>
 </template>
 
@@ -136,6 +136,8 @@ import { computed, onMounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
 import BangumiCompare from "@components/BangumiCompare.vue";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 import snapshot from "@/data/bangumi.json";
 
 setHead({

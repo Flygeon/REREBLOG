@@ -90,11 +90,23 @@
     text-decoration: none;
     /* 静态兜底（浅色主色 35%）：Chromium < 111 无 color-mix()。
        暗色由文件末尾的 [data-theme="dark"] 覆盖，支持的浏览器再由 @supports 恢复 */
-    border-bottom: 1px solid rgba(26, 92, 158, 0.35);
+    border-bottom: 1px dashed rgba(26, 92, 158, 0.35);
     transition: border-color 0.2s ease, background 0.2s ease;
+    /*
+      长链接的虚线下划线跨行时不会连成一整条（默认每行断开、留白不均）。
+      box-decoration-break: clone 让每一行都完整地画自己的下划线，
+      配合 -4px 负外边距 + 4px 内边距把行间空隙吃掉，观感上是连成一段。
+      负 margin 不改变布局占位（padding 抵消），只影响绘制区域。
+    */
+    padding: 0 4px;
+    margin: 0 -4px;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   a:hover {
     border-bottom-color: var(--md-sys-color-primary);
+    border-bottom-style: solid;
     text-decoration: none;
     background: var(--md-sys-state-hover);
   }
@@ -154,6 +166,11 @@
     line-height: 1.6;
     font-size: inherit;
   }
+  /*
+    滚动容器只保留 <pre>（见 markdown.ts 的 fence 渲染器：已给它 tabindex/role）。
+    此前 <code> 也挂了 overflow-x:auto，导致真实滚动的元素变成 <code>，
+    而它不可聚焦 —— axe 判 scrollable-region-focusable 严重违规。
+  */
   pre code {
     display: block;
     padding: 1.1em 1.3em;
@@ -161,12 +178,77 @@
     color: inherit;
     font-size: 0.875rem;
     line-height: inherit;
-    overflow-x: auto;
     border-radius: 0;
   }
   // shiki 双主题：浅色/深色各自定义，由 data-theme 切换生效
   pre.shiki {
     background-color: var(--md-sys-color-surface-container) !important;
+  }
+
+  /*
+    代码块「复制」按钮（由 src/lib/code-copy.ts 在客户端插入）。
+    默认不占视觉：hover / :focus-within 才浮出，键盘用户也能摸到。
+    触屏没有 hover，用 @media (hover: none) 让它常驻，否则永远点不到。
+  */
+  .code-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: var(--z-raised);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-small);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+      color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+      border-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+      transform 120ms var(--md-sys-motion-spring);
+  }
+  pre:hover .code-copy,
+  pre:focus-within .code-copy {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .code-copy {
+      opacity: 1;
+    }
+  }
+  .code-copy:hover {
+    color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+  .code-copy:active {
+    transform: scale(0.9);
+  }
+  .code-copy:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+  .code-copy--done {
+    color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+  .code-copy__icon {
+    font-size: 18px;
+  }
+  /* 动效降级：只保留"出现"，不做位移/缩放过渡 */
+  @media (prefers-reduced-motion: reduce) {
+    .code-copy {
+      transition: none;
+    }
+    .code-copy:active {
+      transform: none;
+    }
   }
   html[data-theme="light"] .shiki,
   html[data-theme="light"] .shiki span {
@@ -328,8 +410,20 @@
   border-radius: 50%;
   animation: md-pulse 1.2s ease-in-out infinite;
 }
+/*
+  拉取失败态。
+  原先写的是整卡 opacity: .6 —— 那会一并压低文字对比度：实测 on-surface-variant
+  在浅色卡片上从 8.5:1 掉到约 3.06:1（axe color-contrast 判定失败，14 处），
+  而 api.github.com 被墙时「每个访客」看到的都是这个状态。
+  失败态只需要"看起来不可用"，不该牺牲可读性：改为只给边框/图标降饱和，
+  文字保持原色。
+*/
 .card-github.fetch-error {
-  opacity: 0.6;
+  border-color: var(--md-sys-color-outline-variant);
+  border-style: dashed;
+}
+.card-github.fetch-error .github-logo {
+  opacity: 0.5;
 }
 @keyframes md-pulse {
   0%,

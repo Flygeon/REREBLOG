@@ -9,8 +9,8 @@
       key="back-to-top"
       class="back-to-top"
       type="button"
-      aria-label="返回顶部"
-      title="返回顶部"
+      :aria-label="i18n(I18nKey.backToTop)"
+      :title="i18n(I18nKey.backToTop)"
       :initial="{ opacity: 0, scale: 0.8, y: 12 }"
       :animate="{ opacity: 1, scale: 1, y: 0 }"
       :exit="{ opacity: 0, scale: 0.8, y: 12 }"
@@ -28,6 +28,8 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { motion, AnimatePresence } from "motion-v";
 import AppIcon from "@components/AppIcon.vue";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 
 /** 露出阈值：滚动超过一屏多一点再显示，避免短页面误扰 */
 const SHOW_AFTER = 600;

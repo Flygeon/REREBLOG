@@ -2,28 +2,28 @@
   <div class="container">
     <header class="page__header">
       <div class="eyebrow">Moments</div>
-      <h1 class="section-title">动态</h1>
-      <p class="section-sub">随手发布的想法、生活琐事与图片。</p>
+      <h1 class="section-title">{{ i18n(I18nKey.memos) }}</h1>
+      <p class="section-sub">{{ i18n(I18nKey.memosSubtitle) }}</p>
       <a class="page__ext" href="/moments/" target="_blank" rel="noopener">
-        管理动态
+        {{ i18n(I18nKey.manageMemos) }}
         <AppIcon name="open_in_new" :size="14" />
       </a>
     </header>
 
     <!-- 加载中 -->
-    <div v-if="loading" class="memos__state">动态加载中…</div>
+    <div v-if="loading" class="memos__state">{{ i18n(I18nKey.loading) }}</div>
 
     <!-- 加载失败 -->
     <div v-else-if="error" class="memos__state">
-      动态加载失败：{{ error }}
-      <p class="memos__hint">稍后再试，或前往管理页检查：flygeon.top/moments/</p>
+      {{ i18nFormat(I18nKey.memosLoadFailed, { error }) }}
+      <p class="memos__hint">{{ i18n(I18nKey.memosErrorHint) }}</p>
     </div>
 
     <!-- 动态列表 -->
-    <section v-else class="memos__list" aria-label="动态列表">
+    <section v-else class="memos__list" :aria-label="i18n(I18nKey.memosList)">
       <article v-for="memo in memos" :key="memo.id" class="memo-card">
         <div class="memo-card__avatar">
-          <img :src="avatarSrc" alt="头像" />
+          <img :src="avatarSrc" :alt="i18n(I18nKey.memoAvatar)" />
         </div>
         <div class="memo-card__body">
           <div class="memo-card__content" v-html="renderMemo(memo.content)"></div>
@@ -37,7 +37,7 @@
             <img
               class="memo-card__image"
               :src="`/moments/media/${memo.image}`"
-              alt="动态图片"
+              :alt="i18n(I18nKey.memoImage)"
               loading="lazy"
             />
           </a>
@@ -48,7 +48,7 @@
 
     <!-- 空 -->
     <div v-if="!loading && !error && memos.length === 0" class="memos__state">
-      暂无动态
+      {{ i18n(I18nKey.emptyMemos) }}
     </div>
   </div>
 </template>
@@ -56,8 +56,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
-import avatarSrc from "@assets/images/avatar.png";
+import avatarSrc from "@assets/images/avatar.webp";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 
 setHead({
   title: "动态 - Flygeon 的最新动态与碎碎念 | Flygeonの小站",

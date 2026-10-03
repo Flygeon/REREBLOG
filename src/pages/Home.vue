@@ -11,19 +11,19 @@
     <!-- ===== ① Hero：自我介绍 + 主行动点 ===== -->
     <section class="home-hero" aria-labelledby="home-hero-title">
       <div class="home-hero__body">
-        <p class="home-hero__eyebrow">个人门户 · Personal Portal</p>
+        <p class="home-hero__eyebrow">{{ i18n(I18nKey.portalEyebrow) }}</p>
         <h1 id="home-hero-title" class="home-hero__title">
-          你好，我是 {{ profile.name }}
+          {{ i18nFormat(I18nKey.homeGreeting, { name: profile.name }) }}
         </h1>
         <p class="home-hero__bio">{{ profile.bio }}</p>
 
         <div class="home-hero__cta">
           <RouterLink v-ripple class="lm-btn lm-btn--filled" to="/blog">
-            进入博客
+            {{ i18n(I18nKey.enterBlog) }}
             <AppIcon name="arrow_forward" :size="18" />
           </RouterLink>
           <RouterLink v-ripple class="lm-btn lm-btn--tonal" to="/about">
-            关于我
+            {{ i18n(I18nKey.aboutMe) }}
             <AppIcon name="person" :size="18" />
           </RouterLink>
         </div>
@@ -45,8 +45,17 @@
         </div>
       </div>
 
+      <!-- 首屏 LCP 元素：45KB PNG 已换 7KB WebP，fetchpriority 提到 high，
+           避免被 CSS/字体等关键资源挤到它们后面才发起请求 -->
       <div class="home-hero__avatar">
-        <img :src="avatarUrl" :alt="profile.name" width="160" height="160" />
+        <img
+          :src="avatarUrl"
+          :alt="profile.name"
+          width="160"
+          height="160"
+          fetchpriority="high"
+          decoding="async"
+        />
       </div>
     </section>
 
@@ -54,7 +63,7 @@
          卡片高度由内容量与 variant 决定（feature / stat / tag / list），
          用 CSS 多列瀑布流排布，形成高低错落的节奏而非等宽等高网格。 -->
     <section v-reveal class="home-section" aria-labelledby="home-nav-title">
-      <h2 id="home-nav-title" class="home-section__title">站点导航</h2>
+      <h2 id="home-nav-title" class="home-section__title">{{ i18n(I18nKey.portalNav) }}</h2>
 
       <!--
         分三列渲染，列内卡片纵向堆叠、末张伸展 → 各列底边对齐。
@@ -126,15 +135,18 @@
          两张卡片并排：左边站点数据，右边写作足迹热力图。
          窄屏自动堆叠为单列。 -->
     <section v-reveal class="home-section" aria-labelledby="home-stats-title">
-      <h2 id="home-stats-title" class="home-section__title">数据一览</h2>
+      <h2 id="home-stats-title" class="home-section__title">{{ i18n(I18nKey.statsTitle) }}</h2>
 
       <div class="stats-row">
         <!-- 统计卡 -->
         <div class="home-panel home-panel--stats">
           <div class="stat-grid">
             <div v-for="s in stats" :key="s.label" class="stat">
-              <span class="stat__value">{{ s.value }}</span>
-              <span class="stat__label">{{ s.label }}</span>
+              <span class="stat__row">
+                <span class="stat__label">{{ s.label }}</span>
+                <span class="stat__rule" aria-hidden="true"></span>
+                <span class="stat__value">{{ s.value }}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -147,18 +159,28 @@
         <div class="home-panel home-panel--activity">
           <div class="activity">
             <div class="activity__head">
-              <span class="activity__title">写作足迹</span>
+              <span class="activity__title">{{ i18n(I18nKey.activityTitle) }}</span>
               <span class="activity__range">
-                {{ activityRange }} · 共 {{ allPosts.length }} 篇
+                {{ activityRange }} · {{ i18nFormat(I18nKey.memoCount, { count: allPosts.length }) }}
               </span>
             </div>
 
-            <!-- 53 周在窄屏放不下：容器内横向滚动，不撑破页面 -->
-            <div class="activity__scroll">
+            <!--
+              53 周在窄屏放不下：容器内横向滚动，不撑破页面。
+              overflow-x:auto 的容器必须可键盘聚焦（axe scrollable-region-focusable）：
+              Firefox/Chromium 里只有可聚焦元素才能用方向键滚动。
+              tabindex="0" + role="group" + aria-label 让键盘用户也能看到全部 53 周。
+            -->
+            <div
+              class="activity__scroll"
+              tabindex="0"
+              role="group"
+              :aria-label="i18nFormat(I18nKey.activityAria, { range: activityRange, count: allPosts.length })"
+            >
               <div
                 class="activity__grid"
                 role="img"
-                :aria-label="'写作足迹热力图，' + activityRange + '，共 ' + allPosts.length + ' 篇文章'"
+                :aria-label="i18nFormat(I18nKey.activityAria, { range: activityRange, count: allPosts.length })"
               >
                 <div v-for="(week, wi) in weeks" :key="wi" class="activity__week">
                   <span
@@ -173,13 +195,13 @@
             </div>
 
             <div class="activity__legend" aria-hidden="true">
-              <span>少</span>
+              <span>{{ i18n(I18nKey.legendLess) }}</span>
               <span class="activity__day is-lv0"></span>
               <span class="activity__day is-lv1"></span>
               <span class="activity__day is-lv2"></span>
               <span class="activity__day is-lv3"></span>
               <span class="activity__day is-lv4"></span>
-              <span>多</span>
+              <span>{{ i18n(I18nKey.legendMore) }}</span>
             </div>
           </div>
         </div>
@@ -189,9 +211,9 @@
     <!-- ===== ④ 最新文章 ===== -->
     <section v-reveal class="home-section" aria-labelledby="home-posts-title">
       <div class="home-section__head">
-        <h2 id="home-posts-title" class="home-section__title">最新文章</h2>
+        <h2 id="home-posts-title" class="home-section__title">{{ i18n(I18nKey.latestPosts) }}</h2>
         <RouterLink class="home-section__more" to="/blog">
-          全部 {{ allPosts.length }} 篇
+          {{ i18nFormat(I18nKey.allPostsLink, { count: allPosts.length }) }}
           <AppIcon name="arrow_forward" :size="16" />
         </RouterLink>
       </div>
@@ -215,9 +237,9 @@
       aria-labelledby="home-bgm-title"
     >
       <div class="home-section__head">
-        <h2 id="home-bgm-title" class="home-section__title">高分收藏</h2>
+        <h2 id="home-bgm-title" class="home-section__title">{{ i18n(I18nKey.topRatedTitle) }}</h2>
         <RouterLink class="home-section__more" to="/bangumi">
-          全部 {{ bangumiTotal }} 部
+          {{ i18nFormat(I18nKey.allAnimeLink, { count: bangumiTotal }) }}
           <AppIcon name="arrow_forward" :size="16" />
         </RouterLink>
       </div>
@@ -264,7 +286,9 @@ import { profileConfig, siteConfig } from "@/config";
 import { allPosts } from "@lib/posts";
 import { getCategoryList, getTagList } from "@utils/content-utils";
 import { setHead } from "@lib/head";
-import avatarUrl from "@assets/images/avatar.png";
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
+import avatarUrl from "@assets/images/avatar.webp";
 import bangumiSnapshot from "@/data/bangumi.json";
 import { reveal } from "@composables/reveal";
 
@@ -1089,6 +1113,9 @@ function stripCover(cover: string): string {
 
 .home-panel {
   padding: var(--space-12);
+  /* 让内部 .stat-grid 的 height:100% 有意义（否则高度由内容决定，摊不开） */
+  display: flex;
+  flex-direction: column;
   border-radius: var(--ll-radius-card);
   background: var(--site-card);
   border: 1px solid var(--site-card-border);
@@ -1106,12 +1133,36 @@ function stripCover(cover: string): string {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-11) var(--space-10);
+  /*
+    改成"标签 … 数值"单行后，每项高度只有一行，四格两行会显得空。
+    让卡片把内容纵向居中摊开，补齐与右侧热力卡的高度差。
+  */
+  height: 100%;
+  align-content: space-evenly;
 }
 
 .stat {
+  display: block;
+}
+
+/*
+  标签与数值之间加点线引导（规格表口径）：label 与 value 同排，
+  中间用点线吃掉剩余空间 —— 视觉上读成"标签 ……… 数值"一条记录。
+  点线是对齐基线用的装饰（aria-hidden），不承载信息。
+*/
+.stat__row {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.stat__rule {
+  flex: 1;
+  /* 贴着基线画虚线；margin-bottom 微调让它与文字基线对齐 */
+  align-self: flex-end;
+  margin-bottom: 0.32em;
+  border-bottom: 2px dotted var(--md-sys-color-outline-variant);
+  /* 点线不应喧宾夺主：略降透明度 */
+  opacity: 0.7;
 }
 
 .stat__value {

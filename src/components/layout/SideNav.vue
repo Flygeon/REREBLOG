@@ -11,7 +11,7 @@
   <nav
     class="side-nav lm-glass"
     :class="{ 'is-collapsed': collapsed }"
-    aria-label="主导航"
+    :aria-label="i18n(I18nKey.mainNav)"
   >
     <div class="side-nav__head">
       <RouterLink class="side-nav__brand" to="/">
@@ -27,8 +27,8 @@
         class="side-nav__toggle lm-icon-btn"
         type="button"
         :aria-expanded="!collapsed"
-        :aria-label="collapsed ? '展开侧边栏' : '收起侧边栏'"
-        :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
+        :aria-label="collapsed ? i18n(I18nKey.expandSidebar) : i18n(I18nKey.collapseSidebar)"
+        :title="collapsed ? i18n(I18nKey.expandSidebar) : i18n(I18nKey.collapseSidebar)"
         @click="collapsed = !collapsed"
       >
         <AppIcon
@@ -89,11 +89,11 @@
         v-ripple
         class="side-nav__link"
         to="/search"
-        aria-label="站内搜索"
-        :title="collapsed ? '搜索' : undefined"
+        :aria-label="i18n(I18nKey.siteSearch)"
+        :title="collapsed ? i18n(I18nKey.siteSearch) : undefined"
       >
         <span class="side-nav__icon"><AppIcon name="search" :size="22" /></span>
-        <span class="side-nav__label">搜索</span>
+        <span class="side-nav__label">{{ i18n(I18nKey.siteSearch) }}</span>
       </RouterLink>
 
       <!-- id=theme-toggle：ThemeReveal.vue 靠它把灯泡动画锚到按钮位置。
@@ -103,8 +103,8 @@
         type="button"
         class="side-nav__link theme-toggle"
         :id="isDesktop ? 'theme-toggle' : undefined"
-        :aria-label="isDark ? '切换到浅色主题' : '切换到深色主题'"
-        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+        :aria-label="isDark ? i18n(I18nKey.switchToLight) : i18n(I18nKey.switchToDark)"
+        :title="isDark ? i18n(I18nKey.switchToLight) : i18n(I18nKey.switchToDark)"
         @click="toggleTheme()"
       >
         <span class="side-nav__icon"
@@ -198,6 +198,8 @@
 </template>
 
 <script setup lang="ts">
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import AppIcon from "@components/AppIcon.vue";

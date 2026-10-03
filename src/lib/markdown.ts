@@ -94,7 +94,19 @@ md.renderer.rules.fence = (tokens: any[], idx: number, options: any, env: any, s
 		return '<div class="math-display">' + html + "</div>\n";
 	}
 
-	return defaultFence(tokens, idx, options, env, self);
+	const html = defaultFence(tokens, idx, options, env, self);
+
+	/*
+	  代码块可访问性（axe scrollable-region-focusable）：
+	  <pre> 是横向滚动容器（长行不换行），但可滚动区域必须能键盘聚焦 ——
+	  Firefox/Chromium 只让可聚焦元素响应方向键。
+	  原先 overflow-x 同时挂在 <code> 上，滚动条落在 <code> 里、焦点却无处可去；
+	  这里统一让 <pre> 当唯一的滚动容器（见 _markdown.scss），并给它 tabindex/role/aria-label。
+	*/
+	return html.replace(
+		/^<pre\b/,
+		'<pre tabindex="0" role="group" aria-label="代码块，可横向滚动"',
+	);
 };
 
 /* ------------------------- 标题 anchor 支持 ------------------------- */

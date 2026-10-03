@@ -1,0 +1,42 @@
+// ============================================================
+// Noto Sans SC 正文字体（自托管子集）
+//
+// 为什么自托管：原先引 Google Fonts 的 CSS，线上 Cloudflare Fonts 会把
+// Google 返回的 404 条 @font-face（4 字重 × 101 个 CJK 分片）**原样内联进
+// HTML** —— 369KB 的 <style> 直接变成渲染阻塞资源，HTML 从 121KB 涨到 490KB；
+// 浏览器随后还要按 unicode-range 下载其中十余个分片，实测首屏字体流量 1.05MB。
+// 首页 LCP 元素只是 45KB 的头像，却被这 1.4MB 字体挤到 11.7s 才加载完。
+//
+// 现在：单文件变量子集，覆盖 400-700 全部字重，全站字符。
+// 字体走 @font-face 声明，不再有 Google Fonts 的 <link>，Cloudflare Fonts
+// 也就不再有可内联的东西。
+//
+// ⚠️ 子集是「按当前内容裁剪」的，新增正文若用到范围外的生僻字会回退到系统字体
+//   （不会显示成方框，只是字形与本站略有差异）。发长文后可重新生成，步骤：
+//   1. 装工具：python3 -m pip install --break-system-packages fonttools brotli
+//   2. 下载可变字体 NotoSansSC[wght].ttf（Google Fonts / notofonts 仓库）
+//   3. 裁到站点实际用到的字重区间，再按「全站已渲染文本」取子集：
+//        from fontTools.varLib import instancer
+//        instancer.instantiateVariableFont(TTFont(src), {"wght": (400, 700)}, inplace=True)
+//        pyftsubset var.ttf --text-file=<站点字符集> --flavor=woff2 \
+//          --layout-features='*' --no-hinting --desubroutinize \
+//          --output-file=noto-sans-sc-subset.woff2
+//      （字符集从 dist/**.html 剥离标签后取唯一字符，再补 ASCII 与中文标点）
+//   4. 覆盖 src/assets/fonts/noto-sans-sc-subset.woff2
+//
+// 许可：Noto Sans SC 由 Google 以 SIL Open Font License 1.1 发布
+// https://fonts.google.com/noto/specimen/Noto+Sans+SC
+// ============================================================
+
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  /* 变量字体：一个文件覆盖 400-700，页面用到的 400/500/600/700 全部命中。
+     不支持可变字体的旧内核会退到默认实例（400），仅字重观感变平，不影响可读性。 */
+  font-weight: 400 700;
+  /* swap：先用系统中文栈渲染，字体到位后替换。
+     不用 block —— 正文会为 354KB 字体空白数秒；也不用 optional ——
+     那样首次访问（字体未进缓存）永远不会应用本站字体。 */
+  font-display: swap;
+  src: url("../assets/fonts/noto-sans-sc-subset.woff2") format("woff2");
+}

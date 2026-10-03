@@ -9,6 +9,7 @@
 //   5. _blog            —— 博客功能层（列表 / 文章 / 归档 / 番剧 …）
 //   6. _sidenav         —— 侧边导航（侧边栏 / 断点 / 移动抽屉，覆盖模板 .nav）
 //   7. _icons           —— Material Symbols 图标字体（子集，自托管）
+//   8. _fonts           —— Noto Sans SC 正文字体（子集，自托管）
 // ============================================================
 
 @use "./template";
@@ -18,6 +19,7 @@
 // 必须排在 _blog 之后：抽屉规则要覆盖 _template 的 .nav（同等特异性靠源顺序）
 @use "./sidenav";
 @use "./icons";
+@use "./fonts";
 
 /* ---------- 全局基础补充（模板未覆盖的部分） ---------- */
 html {
@@ -51,6 +53,24 @@ html {
   :where(.markdown-body p, .post-card__desc) {
     text-wrap: pretty;
   }
+}
+
+/*
+  视觉隐藏（可访问性）：保留给屏幕阅读器与文档大纲，屏幕上不可见。
+  不用 display:none —— 那会把元素从可访问性树里一并移除，标题层级就断了。
+  用 1px 裁剪而非 left:-9999px，避免产生横向滚动条。
+*/
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 ::selection {

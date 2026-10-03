@@ -2,8 +2,8 @@
 // Material Symbols 图标字体（子集化自托管）
 //
 // 原方案：@material-symbols/font-400 的 rounded.css + 全量 woff2（0.54MB，
-// 内含 3000+ 图标）。本站实际只用到 44 个图标，故改为自托管子集：
-// 6.7KB，减少 98%。
+// 内含 3000+ 图标）。本站实际只用到 45 个图标，故改为自托管子集：
+// 6.8KB，减少 98%。
 //
 // ⚠️ 字体是「固定轴」的静态实例（不是可变字体）：
 //   Google Fonts 默认按 opsz/wght/FILL/GRAD@20..48,100..700,0..1,-50..200 生成
@@ -16,7 +16,8 @@
 // 子集构成（Google Fonts 按 icon_names 生成。改完这份清单务必重新下载字体，
 // 否则新图标会退化成纯文本）：
 //   ac_unit, air, arrow_back, arrow_forward, arrow_upward, article, auto_stories,
-//   chevron_left, chevron_right, close, cloud, compare_arrows, dark_mode, edit_note,
+//   chevron_left, chevron_right, close, cloud, compare_arrows, content_copy,
+//   dark_mode, edit_note,
 //   expand_less, expand_more, foggy, folder, group, home, image, inventory_2,
 //   light_mode, link, location_on, menu, menu_book, open_in_new, person,
 //   person_search, progress_activity, push_pin, rainy, refresh, route, search,

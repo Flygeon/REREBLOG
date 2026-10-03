@@ -12,17 +12,17 @@
           type="button"
           :aria-expanded="expanded"
           aria-controls="bgm-fold-body"
-          :aria-label="expanded ? '收起和 TA 的重合番剧' : '展开和 TA 的重合番剧'"
+          :aria-label="expanded ? i18n(I18nKey.bangumiCompareCollapse) : i18n(I18nKey.bangumiCompareExpand)"
           @click="expanded = !expanded"
         >
           <span class="bgm-fold__badge">
             <AppIcon name="compare_arrows" :size="22" />
           </span>
           <span class="bgm-fold__head-text">
-            <span id="bgm-fold-title" class="bgm-fold__title-text">和 TA 的重合番剧</span>
+            <span id="bgm-fold-title" class="bgm-fold__title-text">{{ i18n(I18nKey.bangumiCompareFold) }}</span>
             <span class="bgm-fold__sub">
               填上别人博客的 Bangumi 页面地址（或 TA 的 Bangumi 主页 / 用户名 / UID），
-              看看你们<strong>都看过</strong>哪些番，以及各自给了几分。
+              {{ i18n(I18nKey.compareIntro) }}
             </span>
           </span>
           <!-- 折叠时也能看到结果规模，不用展开才知道 -->
@@ -117,7 +117,7 @@
 
       <!-- 示例：点一下直接跑，省得用户猜要填什么 -->
       <div class="bgm-fold__examples">
-        <span class="bgm-fold__examples-label">试试：</span>
+        <span class="bgm-fold__examples-label">{{ i18n(I18nKey.compareTry) }}</span>
         <button
           v-for="example in EXAMPLES"
           :key="example"
@@ -235,7 +235,7 @@
               </div>
               <div v-if="showComments" class="bgm-fold__comments">
                 <p v-if="item.myComment" class="bgm-fold__comment">
-                  <span class="bgm-fold__comment-who">我</span>{{ item.myComment }}
+                  <span class="bgm-fold__comment-who">{{ i18n(I18nKey.compareMe) }}</span>{{ item.myComment }}
                 </p>
                 <p v-if="item.theirComment" class="bgm-fold__comment">
                   <span class="bgm-fold__comment-who">TA</span>{{ item.theirComment }}
@@ -274,7 +274,7 @@
       <!-- 初始态 -->
       <div v-else-if="!error" class="bgm-fold__empty">
         <AppIcon name="group" :size="36" />
-        <p class="bgm-fold__empty-title">还没开始对比</p>
+        <p class="bgm-fold__empty-title">{{ i18n(I18nKey.compareEmpty) }}</p>
         <p class="bgm-fold__empty-tip">
           对方也用 Bangumi 的话，把 TA 的 Bangumi 用户名 / UID 填进去就行；
           如果 TA 的博客有独立的番剧页，直接粘页面地址——我会尽量从里面认出 Bangumi 用户名。
@@ -316,6 +316,8 @@ export const preMountExpanded =
 </script>
 
 <script setup lang="ts">
+import I18nKey from "@i18n/i18nKey";
+import { i18n, i18nFormat } from "@i18n/translation";
 /**
  * BangumiCompare.vue —— 「和 TA 的重合番剧」
  *

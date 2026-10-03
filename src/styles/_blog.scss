@@ -47,10 +47,17 @@
   text-decoration: underline;
 }
 
-/* 页脚小标题：同样是中文（"导航 Navigation"），去掉对中文无效的 uppercase 与字距 */
-.footer h5 {
+/* 页脚小标题：同样是中文（"导航 Navigation"），去掉对中文无效的 uppercase 与字距。
+   用 h2 而非 h5 —— 页脚在文档大纲里是顶层区块，h5 会让标题层级从 h1/h2 直接跳到 h5，
+   axe 的 heading-order 会判违规。视觉规格沿用模板 .footer h5 的取值。 */
+.footer .footer__heading {
+  font-size: 13px;
+  font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 0;
+  margin-bottom: 14px;
 }
 
 /* 双栏：主内容 + 右侧信息栏 */

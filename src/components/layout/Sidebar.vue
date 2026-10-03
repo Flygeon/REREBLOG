@@ -112,7 +112,7 @@ import { allPosts } from "@lib/posts";
 import { getCategoryList, getTagList } from "@utils/content-utils";
 import { getTagUrl } from "@utils/url-utils";
 import { toRouterLink } from "@utils/url-utils";
-import avatarUrl from "@assets/images/avatar.png";
+import avatarUrl from "@assets/images/avatar.webp";
 import { reveal } from "@composables/reveal";
 
 // 模板滚动入场指令（局部注册，配合 v-reveal 使用）

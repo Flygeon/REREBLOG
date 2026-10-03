@@ -1,8 +1,8 @@
 <template>
-  <nav v-if="headings.length" class="toc" aria-label="目录">
+  <nav v-if="headings.length" class="toc" :aria-label="i18n(I18nKey.toc)">
     <div class="toc__head">
       <AppIcon name="menu_book" :size="16" />
-      <span>目录</span>
+      <span>{{ i18n(I18nKey.toc) }}</span>
     </div>
     <ul class="toc__list">
       <li
@@ -28,6 +28,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 
 export interface TocHeading {
   id: string;
@@ -41,18 +43,78 @@ const props = defineProps<{
 
 const activeIndex = ref(-1);
 let observer: IntersectionObserver | null = null;
+/** 目录列表容器（.toc__list），用于把当前项滚进可视区 */
+let listEl: HTMLElement | null = null;
+/**
+ * 点击目录后的"冻结"标记。
+ * 点击会触发平滑滚动，滚动过程中 IntersectionObserver 仍会依次命中中间章节，
+ * 导致高亮被一路带着跳（观感是"点一下、高亮乱窜"）。
+ * 冻结期间忽略 IO 结果，直到用户自己滚动（wheel / touch / 方向键）才解除。
+ */
+let frozen = false;
+
+/** 用户主动滚动即解除冻结 */
+function releaseFreeze() {
+  frozen = false;
+}
+function bindRelease() {
+  window.addEventListener("wheel", releaseFreeze, { passive: true });
+  window.addEventListener("touchstart", releaseFreeze, { passive: true });
+  window.addEventListener("keydown", releaseFreeze);
+}
+
+/**
+ * 把当前高亮项滚进目录可视区。
+ *
+ * 只在该项**真的超出可视区**时才滚（边缘阈值 8px 容错）——
+ * 否则每次滚动文章都会让目录轻微抖动，反而更烦。
+ */
+function revealActive(index: number) {
+  if (!listEl) return;
+  const item = listEl.children[index] as HTMLElement | undefined;
+  if (!item) return;
+  const top = listEl.scrollTop;
+  const bottom = top + listEl.clientHeight;
+  const itemTop = item.offsetTop;
+  const itemBottom = itemTop + item.offsetHeight;
+  if (itemTop >= top + 8 && itemBottom <= bottom - 8) return;
+  // 让当前项落在可视区约 1/3 处，留出上下文
+  listEl.scrollTo({
+    top: itemTop - listEl.clientHeight / 3,
+    behavior: prefersReducedMotion() ? "auto" : "smooth",
+  });
+}
+
+/** 尊重 prefers-reduced-motion：不做平滑滚动 */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+  );
+}
 
 /** 平滑滚动到锚点（含 App Bar 高度偏移） */
 function scrollTo(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
+  frozen = true;
   const top =
     el.getBoundingClientRect().top + window.scrollY - (64 + 24);
-  window.scrollTo({ top, behavior: "smooth" });
+  window.scrollTo({ top, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   history.replaceState(null, "", `#${id}`);
+
+  // 立即把点击项设为高亮并滚进可视区，不等 IO 回调
+  const idx = props.headings.findIndex((h) => h.id === id);
+  if (idx >= 0) {
+    activeIndex.value = idx;
+    revealActive(idx);
+  }
 }
 
 onMounted(() => {
+  listEl = document.querySelector(".toc__list");
+  bindRelease();
+
   // IntersectionObserver 监听各标题进入视口，高亮当前章节
   const els = props.headings
     .map((h) => document.getElementById(h.id))
@@ -61,12 +123,16 @@ onMounted(() => {
 
   observer = new IntersectionObserver(
     (entries) => {
+      if (frozen) return;
       for (const entry of entries) {
         if (entry.isIntersecting) {
           const idx = props.headings.findIndex(
             (h) => h.id === entry.target.id,
           );
-          if (idx >= 0) activeIndex.value = idx;
+          if (idx >= 0 && idx !== activeIndex.value) {
+            activeIndex.value = idx;
+            revealActive(idx);
+          }
         }
       }
     },
@@ -77,6 +143,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   observer?.disconnect();
+  window.removeEventListener("wheel", releaseFreeze);
+  window.removeEventListener("touchstart", releaseFreeze);
+  window.removeEventListener("keydown", releaseFreeze);
 });
 </script>
 

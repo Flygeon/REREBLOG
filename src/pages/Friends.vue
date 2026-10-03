@@ -2,12 +2,12 @@
   <div class="container">
     <header class="page__header">
       <div class="eyebrow">Friends</div>
-      <h1 class="section-title">友链</h1>
-      <p class="section-sub">朋友们的小站，欢迎留言交换友链、互相串门。</p>
+      <h1 class="section-title">{{ i18n(I18nKey.friends) }}</h1>
+      <p class="section-sub">{{ i18n(I18nKey.friendsSubtitle) }}</p>
     </header>
 
     <!-- 友链卡片网格 -->
-    <section class="friends__grid" aria-label="友链列表">
+    <section class="friends__grid" :aria-label="i18n(I18nKey.friendsList)">
       <a
         v-for="item in shuffled"
         :key="item.title"
@@ -47,6 +47,8 @@ import AppIcon from "@components/AppIcon.vue";
 import Giscus from "@components/Giscus.vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 import { hydrateGithubCards } from "@lib/github-card";
 import { hydrateMermaid } from "@lib/mermaid-view";
 

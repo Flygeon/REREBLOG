@@ -12,7 +12,7 @@
         </div>
 
         <div>
-          <h5>导航 Navigation</h5>
+          <h2 class="footer__heading">{{ i18n(I18nKey.footerNav) }}</h2>
           <ul>
             <li v-for="link in navLinks" :key="link.to">
               <RouterLink :to="link.to">{{ link.label }}</RouterLink>
@@ -21,14 +21,14 @@
         </div>
 
         <div>
-          <h5>链接 Links</h5>
+          <h2 class="footer__heading">{{ i18n(I18nKey.footerLinks) }}</h2>
           <ul>
             <li v-for="link in profileLinks" :key="link.url">
               <a :href="link.url" target="_blank" rel="noopener">
                 {{ link.name }}
               </a>
             </li>
-            <li><RouterLink to="/friends">友情链接</RouterLink></li>
+            <li><RouterLink to="/friends">{{ i18n(I18nKey.friendLinks) }}</RouterLink></li>
           </ul>
         </div>
       </div>
@@ -54,6 +54,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { licenseConfig, profileConfig, siteConfig } from "@/config";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 
 const navLinks = [
   { to: "/", label: "首页" },
