@@ -112,6 +112,9 @@ export default defineConfig({
     },
   },
   server: {
+    // 监听所有网卡（0.0.0.0），否则 Vite 默认只绑 localhost，
+    // CNB 预览代理（来自 172.17.0.x 网段）会 connection refused。
+    host: true,
     // 允许 CNB 预览环境的动态域名（如 n09m4iuxa2-5173.cnb.run）访问 dev server。
     // 必须写成白名单，不能写 `true` —— 后者在 Vite 里等价于关闭 Host/DNS-rebinding 校验，
     // 任意 Host 都能命中 dev 的 /api/bgm、/pic、/r 代理（等于开放跳板）。

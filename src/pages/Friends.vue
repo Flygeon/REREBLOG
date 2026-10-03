@@ -29,12 +29,22 @@
 
     <!-- friends.md 正文（申请格式说明） -->
     <article class="friends__content markdown-body" v-html="html"></article>
+
+    <!--
+      评论（giscus / GitHub Discussions，用法与文章页一致）：
+      Giscus 按 pathname 映射讨论区，本页固定为 /friends，
+      与各文章的讨论线程相互独立，不会串楼。
+    -->
+    <section class="friends__comments">
+      <Giscus />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import AppIcon from "@components/AppIcon.vue";
+import Giscus from "@components/Giscus.vue";
 import { getSpec, getSpecHtml } from "@lib/posts";
 import { setHead } from "@lib/head";
 import { hydrateGithubCards } from "@lib/github-card";

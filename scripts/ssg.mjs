@@ -122,6 +122,11 @@ function composeHtml(template, appHtml, head, routeUrl = "/") {
 	}
 	inject.push(...ogTags);
 
+	// canonical 与 og:url 同源：所有页面都注入，消除重复内容歧义
+	inject.push(
+		`<link rel="canonical" href="${escapeAttr(absolute(head.url || routeUrl))}">`,
+	);
+
 	if (head.jsonLd) {
 		inject.push(
 			`<script type="application/ld+json">${JSON.stringify(head.jsonLd)}</script>`,

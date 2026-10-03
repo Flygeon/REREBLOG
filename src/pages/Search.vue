@@ -92,6 +92,12 @@ import { setHead } from "@lib/head";
 
 const query = ref("");
 
+// 支持 /search?q=关键词 直达（WebSite JSON-LD SearchAction 的落地形式）
+if (typeof window !== "undefined") {
+  const initial = new URLSearchParams(window.location.search).get("q");
+  if (initial) query.value = initial;
+}
+
 // 正文语料懒加载：进入搜索页后才拉取（标题/标签/分类即时可搜，正文随后补上）
 const corpus = ref<Record<string, string> | null>(null);
 onMounted(async () => {

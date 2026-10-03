@@ -55,6 +55,19 @@ export default {
         headers,
       });
     }
+
+    // SSG 预渲染页（HTML）：浏览器短缓存 + 边缘长缓存。
+    // 内容随部署失效（Workers Assets 部署即整体换版本），边缘缓存安全；
+    // 浏览器 5 分钟内的重复访问直接走本地缓存，省一次完整往返的 TTFB。
+    if (res.ok && res.headers.get("content-type")?.includes("text/html")) {
+      const headers = new Headers(res.headers);
+      headers.set("cache-control", "public, max-age=300, s-maxage=86400");
+      return new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers,
+      });
+    }
     return res;
   },
 

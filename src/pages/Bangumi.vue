@@ -14,6 +14,64 @@
       </p>
     </header>
 
+    <!--
+      随机一部：从收藏里随机挑一部展示封面与信息，让页面有「内容感」。
+      随机数只能在客户端算（SSR 与客户端各算一次必然不同 → 水合不一致），
+      因此 SSR 先渲染固定占位骨架，挂载后再随机挑选。
+    -->
+    <section v-if="items.length" class="bangumi__spot" aria-label="随机推荐">
+      <template v-if="spotlight">
+        <a
+          class="bangumi__spot-cover"
+          :href="`https://bgm.tv/subject/${spotlight.subject_id}`"
+          target="_blank"
+          rel="noopener"
+        >
+          <img
+            v-if="spotlight.cover"
+            :src="spotlight.cover"
+            :alt="spotlight.name_cn || spotlight.name"
+          />
+          <span v-if="spotlight.score > 0" class="bangumi__spot-score">
+            <AppIcon name="star" :size="13" />
+            {{ spotlight.score }}
+          </span>
+        </a>
+
+        <div class="bangumi__spot-info">
+          <div class="bangumi__spot-eyebrow">随机一部 · 我的收藏</div>
+          <h2 class="bangumi__spot-title">{{ spotlight.name_cn || spotlight.name }}</h2>
+          <p class="bangumi__spot-meta">
+            <span class="bangumi__spot-badge">{{ statusLabel(spotlight.type) }}</span>
+            <span v-if="spotlight.name_cn && spotlight.name !== spotlight.name_cn">
+              {{ spotlight.name }}
+            </span>
+          </p>
+          <button
+            v-ripple
+            type="button"
+            class="bangumi__spot-btn"
+            @click="pickSpotlight"
+          >
+            <AppIcon name="shuffle" :size="16" />
+            换一部
+          </button>
+        </div>
+      </template>
+
+      <!-- 挂载前（含 SSR）：骨架占位，避免布局跳动 -->
+      <template v-else>
+        <span
+          class="bangumi__spot-cover bangumi__spot-cover--sk md-pulse"
+          aria-hidden="true"
+        ></span>
+        <div class="bangumi__spot-info" aria-hidden="true">
+          <span class="bangumi__spot-sk bangumi__spot-sk--lg md-pulse"></span>
+          <span class="bangumi__spot-sk md-pulse"></span>
+        </div>
+      </template>
+    </section>
+
     <!-- 和别人的番剧重合：输入对方的 Bangumi 页面地址即可比对（客户端专属，不参与 SSG） -->
     <BangumiCompare />
 
@@ -198,7 +256,25 @@ async function fetchCollections(subjectType: number): Promise<any[]> {
   return all;
 }
 
+/**
+ * 随机展示一部：SSR 阶段为 null（渲染骨架），仅在客户端挑选。
+ * 若在构建期就随机，预渲染 HTML 与客户端水合结果必然不同，
+ * 会触发水合不匹配告警并让封面闪一下。
+ */
+const spotlight = ref<BangumiItem | null>(null);
+
+function pickSpotlight() {
+  const pool = items.value.filter((i) => i.cover);
+  if (!pool.length) {
+    spotlight.value = null;
+    return;
+  }
+  spotlight.value = pool[Math.floor(Math.random() * pool.length)];
+}
+
 onMounted(async () => {
+  pickSpotlight();
+
   // SWR：后台静默刷新，成功则无缝替换快照；失败（超时/代理异常）保留静态快照
   try {
     const [anime, book] = await Promise.all([
@@ -206,7 +282,13 @@ onMounted(async () => {
       fetchCollections(1).catch(() => [] as any[]),
     ]);
     const fresh = toItems([...anime, ...book]);
-    if (fresh.length) items.value = fresh;
+    if (fresh.length) {
+      items.value = fresh;
+      // 数据被刷新后旧条目可能已不在收藏里，重新挑一部保证卡片始终有效
+      if (!spotlight.value || !fresh.some((i) => i.subject_id === spotlight.value?.subject_id)) {
+        pickSpotlight();
+      }
+    }
   } catch {
     /* 国内访问失败等场景：静默保留快照数据 */
   }

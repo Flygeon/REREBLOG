@@ -7,6 +7,21 @@
       <!-- 双栏布局：主内容 + 右侧 TOC -->
       <div class="post-layout">
         <div class="post__main">
+          <!--
+            返回上一页：优先走浏览器历史（保住滚动位置与来源页的筛选状态）；
+            直接打开链接/新标签页时没有可回退的历史，则退回博客列表，
+            避免点不动。
+          -->
+          <button
+            v-ripple
+            type="button"
+            class="post__back lm-btn lm-btn--outlined"
+            @click="goBack"
+          >
+            <AppIcon name="arrow_back" :size="20" />
+            返回上一页
+          </button>
+
           <!-- 文章头：栏目(eyebrow) → 标题 → 日期/字数 → 标签行 -->
           <header class="post__header">
             <div class="eyebrow">{{ post.data.category || "未分类" }}</div>
@@ -173,7 +188,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import AppIcon from "@components/AppIcon.vue";
 import Giscus from "@components/Giscus.vue";
 import Toc, { type TocHeading } from "@components/Toc.vue";
@@ -187,6 +202,7 @@ import { hydrateMermaid } from "@lib/mermaid-view";
 import { useLazyRail } from "@composables/lazy-rail";
 
 const route = useRoute();
+const router = useRouter();
 const toLink = toRouterLink;
 const html = ref("");
 const headings = ref<TocHeading[]>([]);
@@ -247,6 +263,26 @@ const randomPosts = computed(() =>
 
 function formatDate(date: Date): string {
   return date.toISOString().slice(0, 10);
+}
+
+/**
+ * 返回上一页。
+ *
+ * 判断依据用 vue-router 写入的历史状态（state.back = 上一条站内路由的 fullPath），
+ * 而不是 document.referrer —— SPA 内部跳转不会更新 referrer，
+ * 用它判断会把「从首页点进文章」也误判成站外来源。
+ *
+ * - 有站内上一条路由 → router.back()，保住来源页的滚动位置与筛选状态；
+ * - 直接打开链接 / 新标签页 / 站外搜索进入（state.back 为空）→ 回博客列表，
+ *   避免点一下把用户弹出站外。
+ */
+function goBack(): void {
+  const back = router.options.history.state?.back;
+  if (typeof back === "string" && back !== "") {
+    router.back();
+    return;
+  }
+  void router.push("/blog");
 }
 
 /** 同步设置页面 head（SSG 注入 <title>/meta/JSON-LD） */
@@ -322,6 +358,25 @@ if (post.value) {
 </script>
 
 <style scoped>
+/*
+  返回按钮：放在文章头之前。
+  外层用负外边距抵消行高带来的额外空白，使它与标题左对齐、
+  又不把文章整体往下推太多。
+*/
+.post__back {
+  margin-bottom: 20px;
+  /* 与正文左边缘对齐（.lm-btn 自带 24px 水平内边距，这里不去动它） */
+  align-self: flex-start;
+}
+/* 窄屏按钮内的文字略小，避免与标题抢视觉 */
+@media (max-width: 600px) {
+  .post__back {
+    margin-bottom: 16px;
+    height: 40px;
+    padding: 0 18px;
+  }
+}
+
 .post-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
