@@ -28,7 +28,15 @@ const SITE_TITLE = "Flygeonの小站";
 const SITE_SUBTITLE = "Flygeonの小站";
 const SITE_LANG = "zh_CN";
 
-const staticPaths = ["/about/", "/archive/", "/bangumi/", "/friends/"];
+// 首页 / 现在只是门户占位页；博客列表已迁到 /blog/（分页 /blog/N/，见下方 writeSitemap）
+const staticPaths = [
+	"/",
+	"/about/",
+	"/bangumi/",
+	"/friends/",
+	"/memos/",
+	"/search/",
+];
 
 const escapeXml = (value) =>
 	value
@@ -98,7 +106,7 @@ function writeSitemap(posts) {
 			),
 		);
 		urls.push({
-			loc: SITE_URL + (pageNumber === 1 ? "/" : `/${pageNumber}/`),
+			loc: SITE_URL + (pageNumber === 1 ? "/blog/" : `/blog/${pageNumber}/`),
 			lastmod,
 		});
 	}

@@ -15,10 +15,15 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-const props = defineProps<{
-  currentPage: number;
-  lastPage: number;
-}>();
+const props = withDefaults(
+  defineProps<{
+    currentPage: number;
+    lastPage: number;
+    /** 分页基址：第 1 页即 base，后续页为 `${base}/${p}` */
+    base?: string;
+  }>(),
+  { base: "/blog" },
+);
 
 const router = useRouter();
 
@@ -34,8 +39,8 @@ function go(current: number | string) {
 }
 
 function pageUrl(p: number): string {
-  if (p === 1) return "/";
-  return `/${p}/`;
+  if (p === 1) return props.base;
+  return `${props.base}/${p}`;
 }
 </script>
 

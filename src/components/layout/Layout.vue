@@ -5,33 +5,36 @@
   -->
   <var-style-provider :style-vars="varletThemeVars">
     <div class="site">
-      <!-- 模板玻璃顶栏 -->
-      <AppBar />
+      <!-- 多根节点：桌面左侧可折叠侧边栏 + 移动顶栏/抽屉（SideNav.vue） -->
+      <SideNav />
 
-      <main id="top" class="site-main">
-        <!--
-          Suspense 边界：文章页 <script setup> 含顶层 await（正文需等 shiki
-          高亮器就绪），Vue 要求 async setup 组件必须嵌在 <Suspense> 内。
-          SSR（renderToString）会等待 async 完成，预渲染 HTML 不受影响。
-        -->
-        <router-view v-slot="{ Component }">
-          <Transition name="route" mode="out-in">
-            <Suspense :timeout="400">
-              <component :is="Component" :key="route.path" />
-              <template #fallback>
-                <div class="route-loading" aria-hidden="true">
-                  <span class="route-loading__dot"></span>
-                  <span class="route-loading__dot"></span>
-                  <span class="route-loading__dot"></span>
-                </div>
-              </template>
-            </Suspense>
-          </Transition>
-        </router-view>
-      </main>
+      <!-- 右列：正文 + 页脚。侧栏 sticky，本列垂直居中观感与改造前一致 -->
+      <div class="site-shell">
+        <main id="top" class="site-main">
+          <!--
+            Suspense 边界：文章页 <script setup> 含顶层 await（正文需等 shiki
+            高亮器就绪），Vue 要求 async setup 组件必须嵌在 <Suspense> 内。
+            SSR（renderToString）会等待 async 完成，预渲染 HTML 不受影响。
+          -->
+          <router-view v-slot="{ Component }">
+            <Transition name="route" mode="out-in">
+              <Suspense :timeout="400">
+                <component :is="Component" :key="route.path" />
+                <template #fallback>
+                  <div class="route-loading" aria-hidden="true">
+                    <span class="route-loading__dot"></span>
+                    <span class="route-loading__dot"></span>
+                    <span class="route-loading__dot"></span>
+                  </div>
+                </template>
+              </Suspense>
+            </Transition>
+          </router-view>
+        </main>
 
-      <!-- 模板页脚 -->
-      <Footer />
+        <!-- 模板页脚 -->
+        <Footer />
+      </div>
 
       <!-- 返回顶部（下滚一屏后浮现） -->
       <BackToTop />
@@ -45,7 +48,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import AppBar from "@components/layout/AppBar.vue";
+import SideNav from "@components/layout/SideNav.vue";
 import Footer from "@components/layout/Footer.vue";
 import BackToTop from "@components/BackToTop.vue";
 import ThemeReveal from "@components/ThemeReveal.vue";
@@ -104,5 +107,19 @@ const varletThemeVars = computed(() => {
 }
 .site-main {
   flex: 1;
+}
+/* 右列：与侧栏并排时占满剩余宽度；min-width:0 允许内部 grid/长内容收缩，防横向溢出 */
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+/* ≥861px：侧栏在左（sticky），右侧正文 + 页脚构成居中观感 */
+@media (min-width: 861px) {
+  .site {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
 </style>

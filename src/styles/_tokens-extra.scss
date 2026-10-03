@@ -29,6 +29,7 @@
   --md-layout-shell-max: var(--ll-maxw); // 页面外壳宽度（与模板容器一致）
   --md-layout-sidebar-w: 20rem; // 右侧信息栏
   --md-layout-gutter: var(--lm-content-pad);
+  // 移动端顶栏高度；桌面无顶栏时为 0（见下方 @media (min-width: 861px)）
   --md-layout-header-h: 64px; // 与模板 .app-bar 高度一致
 
   /* ---- 页面底板 / 卡片（博客层统一卡片口径） ----
@@ -157,6 +158,15 @@
   --z-fab: 60;       /* 回到顶部按钮 */
   --z-progress: 100; /* 阅读进度条（模板值） */
   --z-overlay: 9999; /* 全屏覆盖层（主题切换动画） */
+}
+
+/* 桌面（>= 861px）没有顶栏：侧边栏取代了它，
+   把 sticky 偏移归零，_markdown/_blog 里 calc(var(--md-layout-header-h) + …) 的
+   锚点定位因此不会凭空多出 64px 抬头间距。 */
+@media (min-width: 861px) {
+  :root {
+    --md-layout-header-h: 0px;
+  }
 }
 
 [data-theme="dark"] {

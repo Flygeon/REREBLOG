@@ -1,0 +1,325 @@
+// ============================================================
+// 侧边导航（SideNav）样式层
+//
+// 断点 860px：
+//   >= 861px  左侧 sticky 侧边栏（展开 248px / 收起 76px），无顶栏；
+//             右侧 .site-shell（正文 + 页脚）垂直居中，保住改造前观感。
+//   <= 860px  保留顶栏 + 汉堡抽屉（抽屉样式自 _blog.scss 迁来，
+//             断点 720 -> 860，并接管 721-860px 区间模板 .nav 的横向 flex）。
+//
+// 选择器口径：本文件统一用无前缀 .side-nav*；移动抽屉里引用了同名类，
+// 用 .nav .side-nav__* 提高特异性压过模板 .nav a（(0,1,1)）。
+// 除 .site > .app-bar 外不碰模板选择器，_template.scss 全程未改。
+//
+// 动效：宽度/胶囊/抽屉全部给 prefers-reduced-motion 降级（见文件末尾）。
+// ============================================================
+
+:root {
+  --side-nav-w: 248px;
+  --side-nav-w-collapsed: 76px;
+}
+
+/* =====================================================================
+   一、桌面侧边栏（默认态；<= 860px 由下方 media 整体 display:none 关掉）
+   ===================================================================== */
+.side-nav {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  flex: none;
+  width: var(--side-nav-w);
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  border-right: 1px solid var(--lm-hairline);
+  /* 收起时把移出可视区的宽内容裁掉，避免窄侧栏出现横向滚动 */
+  overflow: hidden;
+  transition: width var(--md-sys-motion-duration-medium)
+    var(--md-sys-motion-easing-standard);
+  /* .lm-glass 提供玻璃底（背景 + backdrop-filter），这里只负责层级 */
+  z-index: var(--z-header);
+}
+.side-nav.is-collapsed {
+  width: var(--side-nav-w-collapsed);
+}
+
+/* ---------- 头部：品牌 + 折叠按钮 ---------- */
+.side-nav__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 48px;
+}
+.side-nav__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+.side-nav__brand-text {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--md-sys-color-on-surface);
+}
+/* 收起态的品牌方片：默认不显示，仅在 is-collapsed 下让位给图标。
+   注意 —— 76px 宽 - 左右各 12px padding = 52px，装不下
+   「36px 方片 + 44px 折叠按钮」，故收起态实际走的是「隐藏 .side-nav__brand、
+   只居中折叠按钮」这条线（见下一条规则）；此处的方片规则被保留，
+   以便把 brand-mark 移出 brand 时无需再改样式。 */
+.side-nav__brand-mark {
+  display: none;
+}
+/* 收起：head 居中；藏起品牌文字区（toggle 是 44px 图标按钮，居中后连续位移自然顺滑） */
+.side-nav.is-collapsed .side-nav__head {
+  justify-content: center;
+}
+.side-nav.is-collapsed .side-nav__brand {
+  display: none;
+}
+.side-nav.is-collapsed .side-nav__brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 700;
+}
+
+/* ---------- 导航列表（自己滚动，不撑高侧栏） ---------- */
+.side-nav__list {
+  position: relative; /* 滑动胶囊的定位上下文 */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ---------- 链接（侧栏 / 抽屉共用同一套结构） ---------- */
+.side-nav__link {
+  position: relative;
+  z-index: var(--z-raised); /* 抬到胶囊之上（定义在 --z-base），文字/图标可见 */
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--md-sys-motion-duration-short)
+      var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+.side-nav__link:hover {
+  background: var(--md-sys-state-hover);
+  color: var(--md-sys-color-on-surface);
+}
+/* 当前项：高亮交给滑动胶囊，自身不再带底色；
+   字色用 on-primary-container —— 胶囊底色就是 primary-container */
+.side-nav__link.is-active {
+  background: transparent;
+  color: var(--md-sys-color-on-primary-container);
+}
+.side-nav__link:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.side-nav__icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+.side-nav__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    opacity var(--md-sys-motion-duration-medium)
+      var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium)
+      var(--md-sys-motion-easing-standard);
+}
+/* 外链小箭头（抽屉里由 .nav .side-nav__ext 关掉） */
+.side-nav__ext {
+  margin-left: var(--space-1);
+  opacity: 0.7;
+  vertical-align: middle;
+}
+
+/* ---------- 底部操作区（搜索 / 主题，结构同 .side-nav__link） ---------- */
+.side-nav__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--lm-hairline);
+}
+
+/* ---------- 收起态：文字淡出 + 图标居中（宽度过渡时图标连续位移） ---------- */
+.side-nav.is-collapsed .side-nav__link {
+  gap: 0;
+  padding: 0;
+  justify-content: center;
+}
+.side-nav.is-collapsed .side-nav__label {
+  opacity: 0;
+  width: 0;
+  transform: translateX(-8px);
+  pointer-events: none;
+}
+
+/* =====================================================================
+   二、滑动高亮胶囊（保留 transform 动画，方向由横向 translateX 改为纵向 translateY）
+   ===================================================================== */
+.side-nav__indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary-container);
+  opacity: 0;
+  pointer-events: none;
+  z-index: var(--z-base);
+  transition:
+    transform var(--md-sys-motion-duration-medium)
+      var(--md-sys-motion-easing-standard),
+    height var(--md-sys-motion-duration-medium)
+      var(--md-sys-motion-easing-standard),
+    opacity var(--md-sys-motion-duration-short)
+      var(--md-sys-motion-easing-standard);
+}
+.side-nav__indicator.is-ready {
+  opacity: 1;
+}
+
+/* =====================================================================
+   三、断点切换
+   ===================================================================== */
+@media (max-width: 860px) {
+  /* 移动端只留顶栏 + 抽屉，桌面侧栏整体撤下 */
+  .side-nav {
+    display: none;
+  }
+}
+@media (min-width: 861px) {
+  /* 桌面无顶栏：移动端顶栏（含其中的 .nav）整体不渲染 */
+  .site > .app-bar {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   四、移动端顶栏 + 汉堡抽屉（<= 860px）
+   原 _blog.scss 的「移动端导航抽屉」整段迁到这里，断点 720 -> 860，
+   并新增 .nav .side-nav__* 链接样式与 721-860px 区间的接管规则。
+   ===================================================================== */
+@media (max-width: 860px) {
+  /* 模板在 <=720px 才 display:none、721-860px 仍是横向 flex。
+     这里统一接管：抽屉始终 display:flex（absolute 不占文档流），
+     可见性交给 opacity/visibility/transform，从而保留平滑淡入 + 下落。 */
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    position: absolute;
+    top: var(--md-layout-header-h); /* 挂在顶栏正下方 */
+    left: 0;
+    right: 0;
+    padding: var(--space-6) var(--lm-content-pad) var(--space-9);
+    background: var(--md-sys-color-surface-container-lowest);
+    border-bottom: 1px solid var(--lm-hairline);
+    box-shadow: var(--md-elevation-2);
+    /* 关闭态：可见性折叠，但 absolute 不占布局 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transform-origin: top;
+    transition:
+      opacity var(--md-sys-motion-duration-short)
+        var(--md-sys-motion-easing-standard),
+      transform var(--md-sys-motion-duration-short)
+        var(--md-sys-motion-easing-standard),
+      visibility 0s linear var(--md-sys-motion-duration-short);
+  }
+  .nav.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    /* 打开时立即可见；关闭时 visibility 延迟到淡出结束再隐藏（见上方 base） */
+    transition-delay: 0s;
+  }
+
+  /* 汉堡按钮：模板只在 <=720px 放出来，这里随抽屉断点一起提到 860 */
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  /* 抽屉里的链接复用侧栏结构（特异性压过模板 .nav a (0,1,1)） */
+  .nav .side-nav__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    height: 44px;
+    border-radius: var(--md-sys-shape-corner-full);
+  }
+  /* 排除当前项：模板 .nav a.is-active 的胶囊底色（0,2,1）与本规则同特异性，
+     若不排除，本文件源顺序在后会把它压成 8% state layer —— 悬停时高亮直接消失。 */
+  .nav .side-nav__link:not(.is-active):hover {
+    background: var(--md-sys-state-hover);
+    color: var(--md-sys-color-on-surface);
+  }
+  .nav .side-nav__icon {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+  }
+  /* 抽屉里不必再带外链小箭头 */
+  .nav .side-nav__ext {
+    display: none;
+  }
+  /* 抽屉里 .is-active 的胶囊高亮由模板 .nav a.is-active（(0,2,1)）保留，不覆盖 */
+}
+
+/* =====================================================================
+   五、reduced-motion：宽度 / 胶囊 / 抽屉 / 文字淡出全部无过渡
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .side-nav,
+  .side-nav__link,
+  .side-nav__label,
+  .side-nav__indicator,
+  .nav,
+  .nav.is-open {
+    transition: none;
+  }
+}

@@ -112,6 +112,10 @@ export default defineConfig({
     },
   },
   server: {
+    // 允许 CNB 预览环境的动态域名（如 n09m4iuxa2-5173.cnb.run）访问 dev server。
+    // 必须写成白名单，不能写 `true` —— 后者在 Vite 里等价于关闭 Host/DNS-rebinding 校验，
+    // 任意 Host 都能命中 dev 的 /api/bgm、/pic、/r 代理（等于开放跳板）。
+    allowedHosts: [".cnb.run", "localhost"],
     proxy: {
       // dev 环境将 Bangumi API 与封面镜像代理到线上 Worker（同一路由协议）
       "/api/bgm": {

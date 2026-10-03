@@ -6,23 +6,25 @@ import { type RouteRecordRaw } from "vue-router";
 // 注意：本文件只导出 routes 数组，路由实例由 app.ts 按运行环境（web/memory）创建，
 // 避免在 Node 端 import 时触发 createWebHistory 访问 window 而报错。
 const routes: RouteRecordRaw[] = [
-  // 首页（分页：/ 为第 1 页，/2/、/3/… 为后续页）
+  // 首页：门户占位页（暂时不开发）
   { path: "/", name: "home", component: () => import("@/pages/Home.vue") },
+  // 博客列表（分页：/blog 为第 1 页，/blog/2、/blog/3/… 为后续页）
+  { path: "/blog", name: "blog", component: () => import("@/pages/Blog.vue") },
+  {
+    path: "/blog/:page(\\d+)",
+    name: "blog-paged",
+    component: () => import("@/pages/Blog.vue"),
+  },
+  // 旧首页分页地址 /2/、/3/… 全量重定向到 /blog/N，保住搜索引擎里的旧链接
   {
     path: "/:page(\\d+)",
-    name: "home-paged",
-    component: () => import("@/pages/Home.vue"),
+    redirect: (to) => ({ path: `/blog/${to.params.page}` }),
   },
   // 文章详情（slug 可能含 /，用 (.*) 全捕获）
   {
     path: "/posts/:slug(.*)",
     name: "post",
     component: () => import("@/pages/Post.vue"),
-  },
-  {
-    path: "/archive",
-    name: "archive",
-    component: () => import("@/pages/Archive.vue"),
   },
   {
     path: "/friends",

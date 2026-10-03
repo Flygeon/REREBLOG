@@ -260,10 +260,10 @@ export function getSpec(slug: string): SpecPage | undefined {
  * 复刻原站静态路由：首页分页 / 文章 / 标签页 / 分类页 / 功能页。
  */
 export function getPrerenderUrls(): string[] {
-	const urls: string[] = ["/", "/archive", "/friends", "/about", "/bangumi", "/memos", "/search"];
+	const urls: string[] = ["/", "/blog", "/friends", "/about", "/bangumi", "/memos", "/search"];
 
 	const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
-	for (let p = 2; p <= totalPages; p++) urls.push(`/${p}`);
+	for (let p = 2; p <= totalPages; p++) urls.push(`/blog/${p}`);
 
 	for (const post of allPosts) urls.push(`/posts/${post.slug}`);
 

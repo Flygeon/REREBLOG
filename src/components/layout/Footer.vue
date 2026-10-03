@@ -57,9 +57,9 @@ import { licenseConfig, profileConfig, siteConfig } from "@/config";
 
 const navLinks = [
   { to: "/", label: "首页" },
-  { to: "/archive", label: "归档" },
-  { to: "/search", label: "搜索" },
+  { to: "/blog", label: "博客" },
   { to: "/bangumi", label: "番剧" },
+  { to: "/memos", label: "动态" },
   { to: "/about", label: "关于" },
 ];
 

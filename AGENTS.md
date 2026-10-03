@@ -40,8 +40,8 @@ Vue 3.5 + vue-router 4 + Vite 6 的**自建 SSG 个人博客**（没有 Astro/Nu
 ## 约定与陷阱
 
 - 站内链接统一经 `toRouterLink`（去尾斜杠）喂 `RouterLink` 的 `to`。
-- `config.ts` 的 `navBarConfig` / `LinkPreset` 是**死配置**；AppBar / Footer 各自硬编码导航。`navBarConfig` 改了不生效。`config.ts` 真正在用的是 `siteConfig` / `profileConfig` / `giscusConfig` / `licenseConfig`。
-- 两套标签/分类 URL 并存：路由 `/tags/:tag`、`/categories/:category`，但 `getTagUrl` / `getCategoryUrl` 生成 `/archive/?tag=`。
+- `config.ts` 的 `navBarConfig` / `LinkPreset` 是**死配置**；SideNav / Footer 各自硬编码导航。`navBarConfig` 改了不生效。`config.ts` 真正在用的是 `siteConfig` / `profileConfig` / `giscusConfig` / `licenseConfig`。`SideNav.vue` 的 `navLinks` 是唯一导航来源（桌面侧栏与移动抽屉共用一份）。
+- 站点是**门户 + 博客**结构：`/` 是门户首页（Hero + 站点导航磁贴 + 数据一览/写作足迹 + 最新文章 + 高分收藏，数据全部取自构建期，见 `src/pages/Home.vue`），博客列表在 `/blog`（分页 `/blog/2`…）；`/archive` 已整站删除，`getTagUrl` / `getCategoryUrl` 生成 `/blog/?tag=` / `?category=` / `?uncategorized=true`（与路由 `/tags/:tag`、`/categories/:category` 并存）。旧的首页分页 `/:page(\d+)` 会 302 到 `/blog/<page>`。
 - `scripts/sitemap-rss.mjs` 内联了一份站点常量，改 `config.ts`（SITE_URL / PAGE_SIZE / 标题）时需同步。
 - tsconfig 与 vite alias **没有 `@data`**；品牌图标用 `@/data/brand-icons`。
 - `docs/ docs-cn/ packages/ demos/ site/ test/ fonts/ icons/ _legacy/ 组件库参考/` 是磁盘上存在但 gitignore 的 MDC-Web 模板遗留物，**不参与构建**，别当成源码。`scripts/` 下只有 `clean/bangumi/render-content/ssg/sitemap-rss.mjs` 属于本站。

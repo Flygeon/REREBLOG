@@ -8,9 +8,9 @@
           返回首页
           <AppIcon name="arrow_forward" :size="18" />
         </RouterLink>
-        <RouterLink v-ripple class="lm-btn lm-btn--tonal" to="/archive">
-          浏览归档
-          <AppIcon name="inventory_2" :size="18" />
+        <RouterLink v-ripple class="lm-btn lm-btn--tonal" to="/blog">
+          浏览博客
+          <AppIcon name="article" :size="18" />
         </RouterLink>
       </div>
     </section>
@@ -23,6 +23,6 @@ import { setHead } from "@lib/head";
 
 setHead({
   title: "页面未找到 | Flygeonの小站",
-  description: "你访问的页面不存在，可前往首页或归档页继续浏览。",
+  description: "你访问的页面不存在，可前往首页或博客页继续浏览。",
 });
 </script>

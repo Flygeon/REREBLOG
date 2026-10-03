@@ -14,7 +14,8 @@
 | :--- | :--- | :--- |
 | 模板基座 | `src/styles/_template.scss` | 模板的 M3 设计令牌（色值/形状/字体/动效曲线）与组件基元（玻璃顶栏 `.app-bar.lm-glass`、`.lm-btn`、`.lm-icon-btn`、`.container`、`.section`、`.eyebrow/.section-title/.section-sub`、`.feature-card`、`.footer`、`.reveal`、`.scroll-progress`、Hero 光晕 `.hero-aura/.blob`） |
 | 令牌补充 | `src/styles/_tokens-extra.scss` | 只补模板未定义的项：字体族、布局度量、状态层、elevation、Varlet 色板映射 |
-| 功能层 | `src/styles/_markdown.scss`、`_blog.scss` | Markdown 正文排版（shiki 双主题 / admonition / GitHub 卡片）与博客组件（文章卡、侧栏、归档时间线、番剧网格、动态 …） |
+| 功能层 | `src/styles/_markdown.scss`、`_blog.scss` | Markdown 正文排版（shiki 双主题 / admonition / GitHub 卡片）与博客组件（文章卡、侧栏、番剧网格、动态 …） |
+| 导航层 | `src/styles/_sidenav.scss` | 左侧可折叠侧边栏（桌面 ≥861px）+ 移动顶栏/抽屉（≤860px），覆盖模板 `.nav`；必须排在 `_blog.scss` 之后（源顺序即覆盖顺序） |
 
 主题色沿用模板：`#1A5C9E`（浅色）/ `#8BB9F0`（深色），亮暗由 `html[data-theme]` 切换。
 
@@ -53,7 +54,7 @@
 
 - **文章**：`src/content/posts/*.md`（`import.meta.glob` 构建期内联）+ 自研 frontmatter 解析（不依赖 Node Buffer，SSR/浏览器同构）
 - **渲染**：markdown-it + shiki 双主题高亮、`:::tip` 等提示块、`::github{repo}` 仓库卡、`:spoiler[]` 剧透
-- **页面**：首页（Hero + 文章流 + 侧栏 + 分页）、文章页（TOC / 上下篇 / 相关+随机推荐 / Giscus 评论）、归档、标签、分类、搜索（全文）、关于、友链、番剧（Bangumi API + **与别人的番剧重合对比**）、动态（Moments Worker）、404
+- **页面**：首页（门户：自我介绍 + 站点导航 + 数据一览与写作足迹热力图 + 最新文章 + 高分收藏）、博客（Hero + 文章流 + 侧栏 + 分页，支持 `?tag=` / `?category=` 筛选）、文章页（TOC / 上下篇 / 相关+随机推荐 / Giscus 评论）、标签、分类、搜索（全文）、关于、友链、番剧（Bangumi API + **与别人的番剧重合对比**）、动态（Moments Worker）、404
 - **番剧重合**：`/bangumi` 顶部输入对方的 Bangumi 主页 / 用户名 / UID（或带用户名的 /bangumi 页面地址），
   拉取 TA 标记为「看过」的动画，与本站主人在 Bangumi 上「看过」的条目取交集，按双方评分排序展示；
   结果用 `?bgm=<uid>` 回写地址栏，链接可直接分享（标识解析与统计口径见 `src/lib/bangumi-compare.ts`）
@@ -68,11 +69,11 @@ index.html                  # Vite 入口（含首屏主题初始化，避免暗
 src/
   App.vue  app.ts  main.ts  router.ts  config.ts  entry-server.ts
   components/
-    layout/{AppBar,Footer,Layout,Sidebar}.vue   # 模板 UI 的 Vue 化
-    {PostCard,PostList,Pagination,Toc,Giscus,ScrollProgress,AppIcon}.vue
+    layout/{SideNav,Footer,Layout,Sidebar}.vue  # SideNav=左侧可折叠导航+移动顶栏；Sidebar=首页右侧信息栏
+    {PostCard,PostList,Pagination,Toc,Giscus,ScrollProgress,AppIcon,ThemeReveal}.vue
     BangumiCompare.vue          # /bangumi 的「和 TA 的重合番剧」输入框 + 结果网格
   composables/reveal.ts      # v-reveal 滚动入场指令（含 SSR props）
-  pages/                     # Home/Post/Archive/Tag/Category/Search/About/Friends/Bangumi/Memos/NotFound
+  pages/                     # Home(门户首页)/Blog(文章列表)/Post/Tag/Category/Search/About/Friends/Bangumi/Memos/NotFound
   lib/                       # posts / markdown / frontmatter / theme / head / bangumi-compare（重合比对）
   utils/ constants/ i18n/ types/
   content/posts/*.md         # 文章
