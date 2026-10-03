@@ -56,12 +56,21 @@ export default {
       });
     }
 
-    // SSG 预渲染页（HTML）：浏览器短缓存 + 边缘长缓存。
-    // 内容随部署失效（Workers Assets 部署即整体换版本），边缘缓存安全；
-    // 浏览器 5 分钟内的重复访问直接走本地缓存，省一次完整往返的 TTFB。
+    // SSG 预渲染页（HTML）：只给很短的边缘缓存。
+    //
+    // 曾经写 s-maxage=86400，理由是「Assets 部署即整体换版本，边缘缓存安全」——
+    // 这个推论是错的：HTML 里引用的是带内容哈希的 /assets 文件名（index-<hash>.js、
+    // style-<hash>.css），而旧 hash 的产物在下次部署时就被删掉了。于是边缘上那份
+    // 24 小时有效的旧 HTML 会指向一批已经不存在的资源，新访客拿到的就是无样式、
+    // 无脚本的页面（实测换版后 /assets/index-3lsNles5.js 立即 404）。
+    // 更常见的情形是首页停留在上一版内容长达一天（实测 age 已达 5500s 仍是旧版），
+    // 部署等于没生效。
+    //
+    // 现在：边缘与浏览器都只缓存 60 秒并强制复用前校验，换版后最多 1 分钟即全量更新；
+    // 60 秒内的高频重复访问仍能命中边缘，TTFB 收益保留，但不再有「跨部署缓存」风险。
     if (res.ok && res.headers.get("content-type")?.includes("text/html")) {
       const headers = new Headers(res.headers);
-      headers.set("cache-control", "public, max-age=300, s-maxage=86400");
+      headers.set("cache-control", "public, max-age=60, s-maxage=60, must-revalidate");
       return new Response(res.body, {
         status: res.status,
         statusText: res.statusText,
