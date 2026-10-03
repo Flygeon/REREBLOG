@@ -87,15 +87,26 @@
 /* 列表标题行：替代原先孤立在 Hero 与列表之间的「27 篇文章」居中计数块 */
 .post-list__head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--space-6);
   margin: var(--space-12) 0 var(--space-7);
 }
 .post-list__title {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
   font-size: var(--md-sys-typescale-title-medium-size);
   font-weight: 600;
   color: var(--md-sys-color-on-surface);
+}
+/* 标题与右侧计数之间的虚线：占据标题块内的剩余空间，把「最新文章」与「N 篇文章」
+   用一条延伸到计数左缘的虚线连起来，替代原先 space-between 的空白留白 */
+.post-list__title::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 0;
+  margin-left: var(--space-6);
+  border-top: 1px dashed var(--md-sys-color-outline-variant);
 }
 .post-list__count {
   font-size: var(--md-sys-typescale-label-large-size);

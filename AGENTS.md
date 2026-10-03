@@ -5,6 +5,15 @@ Vue 3.5 + vue-router 4 + Vite 6 的**自建 SSG 个人博客**（没有 Astro/Nu
 
 深挖背景（读它们，不要重复推导）：`HANDOFF.md`（交接文档，最全）、`UI-REFACTOR-CHECKLIST.md`（32 条样式决策来龙去脉）、`README.md`。
 
+## 验收方式（用户明确要求，2026-10-04）
+
+**视觉类改动一律在 dev 环境（`pnpm dev`）由用户本人验收，不要跑构建 / 截图 / 无头浏览器回归去"证明"效果。**
+
+- 用户看的是 `http://localhost:5173`（dev server 常驻，改完 HMR 立即生效）。写完之后告诉他刷新即可，**不要**再跑 `pnpm build`、Playwright 截图、逐像素 diff 来"验证视觉"。
+- 不要把"截图比对通过"当成验收依据：无头 Chromium 走 SwiftShader，玻璃折射/动效这类 GPU 观感与真实浏览器不一致，测了也不算数，只会白烧一轮时间。
+- 仍然要跑、且只需跑这些**确定性门禁**：`pnpm check:all`、`pnpm type-check`、`pnpm lint`。改路由/标题层级才需要 `pnpm test:a11y`（它跑的是 `dist/`，得先 `pnpm build`）。
+- 例外：用户明确说"这次要验证/上线前检查"时，才回到构建 + a11y 那套。
+
 ## 命令
 
 - 包管理只用 **pnpm**（`packageManager: pnpm@9.14.4`）；`npm install` 会破坏 `.pnpm` 软链布局。

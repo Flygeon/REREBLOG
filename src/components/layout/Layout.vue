@@ -41,6 +41,12 @@
 
       <!-- 亮暗切换的「拉绳灯泡」动画层（仅在切换时挂载） -->
       <ThemeReveal />
+
+      <!--
+        隐藏的液态玻璃调参面板。内部自己 Teleport 到 body，且只在被触发过
+        （panelOpen 为真）之后才渲染节点 —— SSG 产物里完全没有它，普通访客看不到。
+      -->
+      <LiquidGlassPanel />
     </div>
   </var-style-provider>
 </template>
@@ -52,6 +58,7 @@ import SideNav from "@components/layout/SideNav.vue";
 import Footer from "@components/layout/Footer.vue";
 import BackToTop from "@components/BackToTop.vue";
 import ThemeReveal from "@components/ThemeReveal.vue";
+import LiquidGlassPanel from "@components/LiquidGlassPanel.vue";
 // 只引 md3 亮/暗两套预设（不引整包 themes：避免带上 dark 主题与 convert/toRem 等）
 import md3Dark from "@varlet/ui/es/themes/md3-dark/index.mjs";
 import md3Light from "@varlet/ui/es/themes/md3-light/index.mjs";

@@ -3,7 +3,7 @@
     <div class="blog-grid">
       <div>
         <!-- Hero 横幅卡片：banner 图 + scrim + 站名 logo + 打字机副标题 -->
-        <section class="home__hero">
+        <section ref="heroRef" class="home__hero">
           <img
             class="home__hero-img"
             :src="bannerUrl"
@@ -13,6 +13,17 @@
             decoding="async"
           />
           <div class="home__hero-scrim" aria-hidden="true"></div>
+          <!--
+            液态玻璃折射层：与 <img> 同源同图，WebGL 把底图按圆角矩形折射重画一遍，
+            叠在 scrim 之上、文案之下。WebGL 不可用时组件不显示，Hero 就是原来的样子。
+          -->
+          <LiquidGlass
+            v-if="heroRef"
+            class="home__hero-glass"
+            :src="bannerUrl"
+            :params="heroGlassParams"
+            scene="blog-hero"
+          />
           <div class="home__hero-text">
             <img class="home__logo" :src="logoUrl" :alt="siteConfig.title" />
             <p class="home__subtitle">
@@ -35,7 +46,7 @@
             {{ hasFilter ? i18n(I18nKey.filterResult) : i18n(I18nKey.latestPosts) }}
           </h2>
           <span v-if="hasFilter" class="page__meta">{{ filterLabel }}</span>
-          <span v-else class="post-list__count">{{ i18nFormat(I18nKey.postCount, { count: allPosts.length }) }}</span>
+          <span v-else class="post-list__count">{{ allPosts.length }} {{ i18n(I18nKey.postCount) }}</span>
         </div>
 
         <section class="post-list" :aria-label="i18n(I18nKey.postList)">
@@ -71,6 +82,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import LiquidGlass from "@components/LiquidGlass.vue";
+import { registerGlassScene } from "@composables/liquid-glass-store";
 import PostCard from "@components/PostCard.vue";
 import Pagination from "@components/Pagination.vue";
 import Sidebar from "@components/layout/Sidebar.vue";
@@ -93,6 +106,46 @@ setHead({
 const route = useRoute();
 
 const { ready: sidebarReady } = useLazyRail();
+
+/*
+  Hero 液态玻璃：圆角取自「与 Hero 的 border-radius 一致」这一硬约束 ——
+  模板 --md-sys-shape-corner-large = 16px（Hero 自身用的就是它），
+  这里显式写成 16 而不是读 CSS 变量：着色器要的是设备像素里的确定值，
+  读计算值既拖慢首帧，也拿不到可靠回落。改圆角时两处一起改。
+  厚度/过渡带宽按这块横幅的宽扁比例标定（813×270 上下），
+  参考 demo 的 150×170 小方块尺寸不能直接照搬。
+*/
+const heroGlassParams = {
+  cornerRadius: 16,
+  ior: 1.12,
+  thickness: 34,
+  normalStrength: 5.6,
+  displacementScale: 1,
+  heightTransitionWidth: 26,
+  sminSmoothing: 20,
+  blurRadius: 1.2,
+  highlightWidth: 3.2,
+  edgeLift: 0.34,
+  overlayStrength: 0.14,
+  pointerStrength: 6,
+  flow: 2.4,
+  flowSpeed: 0.22,
+  maxDpr: 1.5,
+};
+
+/*
+  注册到隐藏管理面板：面板显示的初值就是上面这套常量，
+  没被改动过时 resolve 出来的结果与它逐字段相同（面板对线上零影响）。
+*/
+registerGlassScene({
+  id: "blog-hero",
+  label: "博客 · Hero 横幅",
+  mode: "image",
+  defaults: heroGlassParams,
+});
+
+/* Hero 根节点引用：玻璃层只在 Hero 真的挂载后才创建（v-if 兜住空引用） */
+const heroRef = ref<HTMLElement | null>(null);
 
 // hero 副标题用原 banner 的副标题文案（"音无结弦之时，悦动天使之心"）
 const subtitleFull = siteConfig.banner?.subtitle?.text || siteConfig.subtitle;
@@ -204,18 +257,37 @@ const pagePosts = computed(() => {
   border-radius: var(--md-sys-shape-corner-large);
   overflow: hidden;
   box-shadow: var(--md-sys-elevation-2);
+  /* 图片内缩量 / 图片圆角：默认 0（窄屏单栏，图片仍铺满整卡）。
+     内容在双栏视口里「小一点」—— 卡片本身尺寸、圆角、阴影都不动，
+     只有图（和跟着它走的液态玻璃层）往内收，于是卡片看起来像是
+     一张带内衬的相框：外圈是 16px 圆角的卡片，里圈是 12px 圆角的图。
+     用自定义属性统一给「图片 + 玻璃层 + scrim」三处取同一个盒子，
+     避免三者的圆角/内缩各写一套而错位。 */
+  --hero-art-inset: 0px;
+  --hero-art-radius: 0px;
 }
 /* 双栏时让 Hero 顶部与 sticky aside 的 16px 偏移对齐，确保顶边、底边完全齐平 */
 @media (min-width: 1081px) {
   .home__hero {
     margin-top: 16px;
+    --hero-art-inset: 14px;
+    --hero-art-radius: var(--md-sys-shape-corner-medium);
   }
 }
 .home__hero-img {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: var(--hero-art-inset);
+  left: var(--hero-art-inset);
+  /* 层序：底图 0 → 液态玻璃 1 → scrim 2 → 文案 3（同为定位元素，按 z-index 排列）
+     底图垫在最下面，玻璃层从纹理里取同一张图做折射，scrim 压在玻璃之上 ——
+     这样「暗色渐变托白字」的原设计与折光互不干扰：文案可读性不变，
+     玻璃折射在 scrim 较弱的上半部分清晰可见。 */
+  z-index: 0;
+  /* 绝对定位的替换元素给死宽高，图片按内缩量整体变小（不用 transform，
+     避免和玻璃层的设备像素换算打架） */
+  width: calc(100% - var(--hero-art-inset) * 2);
+  height: calc(100% - var(--hero-art-inset) * 2);
+  border-radius: var(--hero-art-radius);
   object-fit: cover;
   object-position: center;
 }
@@ -225,7 +297,13 @@ const pagePosts = computed(() => {
 }
 .home__hero-scrim {
   position: absolute;
-  inset: 0;
+  /* scrim 与图片同盒：否则内缩露出的那一圈会被渐变涂黑，卡片周围出现黑边 */
+  top: var(--hero-art-inset);
+  left: var(--hero-art-inset);
+  width: calc(100% - var(--hero-art-inset) * 2);
+  height: calc(100% - var(--hero-art-inset) * 2);
+  border-radius: var(--hero-art-radius);
+  z-index: 2;
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.72) 0%,
@@ -233,8 +311,18 @@ const pagePosts = computed(() => {
     transparent 70%
   );
 }
+/* 液态玻璃画布：与图片同盒同圆角（折射的是这张图，盒子错位就对不上） */
+.home__hero-glass {
+  z-index: 1;
+  top: var(--hero-art-inset);
+  left: var(--hero-art-inset);
+  width: calc(100% - var(--hero-art-inset) * 2);
+  height: calc(100% - var(--hero-art-inset) * 2);
+  border-radius: var(--hero-art-radius);
+}
 .home__hero-text {
   position: absolute;
+  z-index: 3;
   left: 0;
   right: 0;
   bottom: 0;

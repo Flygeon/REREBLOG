@@ -10,6 +10,21 @@
 
     <!-- ===== ① Hero：自我介绍 + 主行动点 ===== -->
     <section class="home-hero" aria-labelledby="home-hero-title">
+      <!--
+        液态玻璃层（holo 模式）。
+        这块 Hero 底下没有底图可折射（背景是卡片色 + 环境光晕），所以走
+        「全息玻璃」分支：不改写背景，直接合成玻璃本体 —— 流动焦散 +
+        边缘色散弧 + 镜面高光，底色按亮/暗主题取乳白或深蓝灰。
+        它铺满整张卡、垫在内容之下；WebGL 不可用 / 着色器编译失败时
+        组件不显示，卡片就是原来的纯色 + 光晕，静默降级。
+      -->
+      <LiquidGlass
+        v-if="heroReady"
+        class="home-hero__glass"
+        mode="holo"
+        :params="heroGlassParams"
+        scene="home-hero"
+      />
       <div class="home-hero__body">
         <p class="home-hero__eyebrow">{{ i18n(I18nKey.portalEyebrow) }}</p>
         <h1 id="home-hero-title" class="home-hero__title">
@@ -276,6 +291,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import AppIcon from "@components/AppIcon.vue";
+import LiquidGlass from "@components/LiquidGlass.vue";
+import { registerGlassScene } from "@composables/liquid-glass-store";
 import BrandIcon from "@components/BrandIcon.vue";
 import PostCard from "@components/PostCard.vue";
 import PortalCardBody, {
@@ -297,6 +314,54 @@ const vReveal = reveal;
 
 const profile = profileConfig;
 const socialLinks = computed(() => profileConfig.links ?? []);
+
+/*
+  Hero 的液态玻璃参数。
+  这块卡是 1152×373 的横向大面（比 /blog 那块 800×270 的英雄横幅更宽更矮），
+  而且底色本来就是浅色卡片 + 左上角环境光晕，所以：
+    · 玻璃整体压得很淡（alpha 0.2），只当一层「材质」叠在卡片上，
+      不能盖掉卡片自身的 --site-card 底色与光晕；
+    · 流场调疏（fieldScale 3），大面上焦散太密会变成噪点；
+    · 边缘色散收窄，只做轮廓提示，避免抢走左侧标题与两个 CTA 的注意力。
+*/
+const heroGlassParams = {
+  // autoCornerRadius 默认开启，圆角直接从卡片的 --ll-radius-card(28px) 量
+  cornerRadius: 28,
+  ior: 1.1,
+  thickness: 16,
+  normalStrength: 2.6,
+  displacementScale: 1,
+  heightTransitionWidth: 22,
+  sminSmoothing: 16,
+  blurRadius: 0,
+  highlightWidth: 1.8,
+  edgeLift: 0,
+  edgeFalloff: 1,
+  overlayStrength: 0,
+  pointerStrength: 6,
+  flow: 1.8,
+  flowSpeed: 0.22,
+  fieldScale: 3,
+  causticStrength: 0.26,
+  rainbowStrength: 0.4,
+  rainbowAngle: 2.3,
+  arcWidth: 2,
+  // 大字大面：中心更透，玻璃只负责「材质感」，不参与可读性
+  alpha: 0.2,
+  rimAlpha: 0.32,
+  maxDpr: 1.5,
+};
+
+/* 注册到隐藏管理面板（详见 liquid-glass-store.ts） */
+registerGlassScene({
+  id: "home-hero",
+  label: "门户 · Hero 卡片",
+  mode: "holo",
+  defaults: heroGlassParams,
+});
+
+/* Hero 挂载后再建玻璃层：v-if 需要元素已就位（同 Blog.vue 的处理） */
+const heroReady = ref(false);
 
 setHead({
   // 全站标题统一用「 | 」分隔（与其余页面、head.ts 的 SITE_TITLE 约定一致）
@@ -696,6 +761,7 @@ function onCardLoad(card: PortalCardShape) {
 }
 
 onMounted(() => {
+  heroReady.value = true;
   syncColumnCount();
   mqNarrow = window.matchMedia("(max-width: 1100px)");
   mqMobile = window.matchMedia("(max-width: 680px)");
@@ -832,15 +898,30 @@ function stripCover(cover: string): string {
 
 .home-section__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
 }
 
 .home-section__title {
+  /* 标题自身是 flex 容器，让 ::after 虚线占满剩余空间：
+     独立标题（站点导航 / 数据一览）延伸到容器右缘；
+     带「查看全部」链接的标题（最新文章 / 高分收藏）连到链接左缘。 */
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
   font-size: var(--md-sys-typescale-title-medium-size);
   font-weight: 600;
   color: var(--md-sys-color-on-surface);
+}
+
+/* 标题后接一条虚线装饰，占满到行尾/右侧控件的剩余空间 */
+.home-section__title::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 0;
+  margin-left: var(--space-6);
+  border-top: 1px dashed var(--md-sys-color-outline-variant);
 }
 
 .home-section__more {
@@ -901,8 +982,23 @@ function stripCover(cover: string): string {
   }
 }
 
+/* 液态玻璃画布：铺满整张卡，圆角由组件从卡片 computed border-radius 量取 */
+.home-hero__glass {
+  z-index: 1;
+  border-radius: var(--ll-radius-card);
+}
+
+/*
+  层级（同为定位元素，按 z-index 排列）：
+    0  环境光晕 ::before（--z-below = -1，仍在卡片内）
+    1  液态玻璃 canvas
+    2  正文 body / 头像
+  玻璃夹在光晕与内容之间：光晕在它下面被折射感盖住一点反而更自然，
+  正文必须压在最上层，否则会被 canvas 的纹理影响可读性。
+*/
 .home-hero__body {
   position: relative;
+  z-index: 2;
   min-width: 0;
 }
 
@@ -985,6 +1081,7 @@ function stripCover(cover: string): string {
 
 .home-hero__avatar {
   position: relative;
+  z-index: 2;
 }
 
 .home-hero__avatar img {

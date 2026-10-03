@@ -1,6 +1,10 @@
 <template>
   <div class="sidebar">
-    <!-- 站长卡片 -->
+    <!--
+      站长卡片。
+      头像上挂着隐藏管理面板的三连击入口（见 script 的 onAvatarClick）：
+      刻意不加 title / cursor / hover 反馈，页面上看不出这里可交互。
+    -->
     <section v-reveal class="side-card side-profile side-card--hero">
       <img
         class="side-profile__avatar"
@@ -8,6 +12,7 @@
         :alt="profile.name"
         width="96"
         height="96"
+        @click="onAvatarClick"
       />
       <div class="side-profile__name">{{ profile.name }}</div>
       <p class="side-profile__bio">{{ profile.bio }}</p>
@@ -114,6 +119,7 @@ import { getTagUrl } from "@utils/url-utils";
 import { toRouterLink } from "@utils/url-utils";
 import avatarUrl from "@assets/images/avatar.webp";
 import { reveal } from "@composables/reveal";
+import { panelOpen } from "@composables/liquid-glass-store";
 
 // 模板滚动入场指令（局部注册，配合 v-reveal 使用）
 const vReveal = reveal;
@@ -131,6 +137,36 @@ const visibleTags = computed(() =>
 );
 
 const toLink = toRouterLink;
+
+/* ------------------------------------------------------------------ *
+ * 隐藏入口：头像三连击 → 液态玻璃调参面板
+ * ------------------------------------------------------------------ */
+
+/** 连击窗口（ms）：三次点击都落在这个间隔内才触发 */
+const TAP_WINDOW = 800;
+/** 已累计的点击数 */
+let taps = 0;
+let lastTap = 0;
+
+/**
+ * 没有触发提示：不 preventDefault、不改鼠标样式、不加 title，
+ * 也不让点击数影响任何可见状态 —— 点 1 次或 2 次看起来「什么都没发生」。
+ * 只有凑满三次的瞬间把面板打开。
+ *
+ * 用 click 而不是 dblclick：浏览器原生的双击语义只到 2 次，
+ * 三连击必须自己计时。窗口从「上一次点击」起算，不是从第一次起算，
+ * 所以三次点击两两间隔都在 800ms 内即可。
+ */
+function onAvatarClick() {
+  const now = Date.now();
+  taps = now - lastTap > TAP_WINDOW ? 1 : taps + 1;
+  lastTap = now;
+  if (taps >= 3) {
+    taps = 0;
+    lastTap = 0;
+    panelOpen.value = true;
+  }
+}
 
 /* ---- 正在追：subject_type=2(动画) 收藏里 type=3(doing) 的条目 ---- */
 interface BgmItem {
