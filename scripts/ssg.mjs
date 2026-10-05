@@ -56,6 +56,55 @@ try {
 	// 无 git 环境（如某些 CI 浅克隆）则跳过指纹
 }
 
+/*
+  首屏 LCP 图的 <link rel="preload">。
+
+  背景：站点首屏的大图（Hero banner / 头像）都是 Vite 处理过的哈希资源，
+  引用它们的却是 JS —— 浏览器必须先下载并执行 JS，才知道要取哪张图，
+  于是图片被串行推迟了一整轮（首屏 LCP 直接吃这个亏）。
+
+  这里在预渲染落盘前，按「页面 → 该页 LCP 图」的映射注入 preload，
+  让 HTML 解析阶段就与 JS/CSS 并行发起图片请求。
+
+  匹配方式：扫描 dist/assets 下带内容哈希的产物文件名。
+  只给「该页真正的 LCP 元素」注入，不做全站无差别 preload ——
+  否则会挤占首屏带宽、拖慢真正关键资源。
+*/
+function findHashedAsset(re) {
+	let entries;
+	try {
+		entries = fs.readdirSync(path.join(distDir, "assets"));
+	} catch {
+		return "";
+	}
+	return entries.find((f) => re.test(f)) || "";
+}
+
+/** 页面 URL → 需要 preload 的图片资源（正则匹配带哈希产物名） */
+function preloadImagesFor(routeUrl) {
+	const rules = [];
+	// 博客列表页：Hero banner 是 LCP 元素（fetchpriority="high"）
+	if (routeUrl === "/blog" || /^\/blog\/\d+$/.test(routeUrl)) {
+		rules.push(/^banner-.*\.webp$/);
+	}
+	// 门户首页：头像位于首屏折叠线内，且带 fetchpriority="high"
+	if (routeUrl === "/") {
+		rules.push(/^avatar-.*\.webp$/);
+	}
+	const links = [];
+	for (const re of rules) {
+		const file = findHashedAsset(re);
+		if (!file) continue;
+		const base = process.env.VITE_BASE || "/";
+		const prefix = base.endsWith("/") ? base : base + "/";
+		links.push(
+			`<link rel="preload" as="image" href="${prefix}assets/${file}">`,
+		);
+	}
+	// 去重：同一张图可能同时命中多条规则（当前规则集不会，但保持幂等更稳）
+	return [...new Set(links)];
+}
+
 // Windows 下 ESM 动态 import 需要 file:// URL（ERR_UNSUPPORTED_ESM_URL_SCHEME）
 const { render, getPrerenderUrls } = await import(pathToFileURL(ssrEntry).href);
 
@@ -138,9 +187,14 @@ function composeHtml(template, appHtml, head, routeUrl = "/") {
 	  这里给每一页注入 <link rel="alternate" type="application/rss+xml">，
 	  订阅者从任意页面都能一键订阅。
 	*/
+	// RSS autodiscovery。
 	inject.push(
 		`<link rel="alternate" type="application/rss+xml" title="${escapeAttr(siteMeta.siteTitle)}" href="${escapeAttr(absolute("/rss.xml"))}">`,
 	);
+
+	// 首屏 LCP 图预加载（Hero banner / 头像）——与 JS/CSS 并行，缩短 LCP
+	// 缩进与 Vite transformIndexHtml 注入的字体 preload 对齐，保持产物格式一致
+	inject.push(...preloadImagesFor(routeUrl).map((l) => "  " + l));
 
 	if (head.jsonLd) {
 		inject.push(

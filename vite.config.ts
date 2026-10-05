@@ -32,36 +32,61 @@ function restoreDataUriQuotes() {
 }
 
 /**
- * 把图标字体提前写进 <head> 的 <link rel="preload">。
+ * 把首屏必需的字体提前写进 <head> 的 <link rel="preload">。
  *
- * 为什么需要：图标字体原本只在构建后的 CSS 里被 url() 引用，浏览器要先拿到
+ * 为什么需要：字体原本只在构建后的 CSS 里被 url() 引用，浏览器要先拿到
  * CSS（首屏 CSS 是 ~200KB，压缩后 ~50KB）才发现字体，再发起第二个请求 ——
  * 字体在关键路径上被串行延后了一整个 RTT。
  *
- * @font-face 用的是 font-display: block（刻意不改 swap，见 _icons.scss 注释），
- * 所以「发现得晚」会直接表现为首屏图标短暂空白。preload 让浏览器在解析 HTML 时
- * 就并行发起字体请求，与 CSS 下载重叠。
+ * 这里同时预加载两类字体，它们的处境与动机不同：
+ *
+ *  1. 图标字体 material-symbols-rounded-subset（6.8KB）
+ *     @font-face 用的是 font-display: block（刻意不改 swap，见 _icons.scss 注释），
+ *     所以「发现得晚」会直接表现为首屏图标短暂空白。
+ *
+ *  2. 正文可变字体 noto-sans-sc-subset（354KB，首屏最大的单个资源）
+ *     font-display: swap —— 中文正文会先用系统字体渲染，字体到位后回退替换。
+ *     但 354KB 排在 CSS 之后串行下载，会让「系统字体 → 本站字体」的跳变
+ *     明显后移（表现为整页字形抖一下）。提前与 CSS 并行下载能显著缩短这个窗口。
+ *
+ * ⚠️ 只 preload 这两个首屏必需的字体。KaTeX / Varlet 的字体不进首屏关键路径，
+ *    不能加 —— 否则会白白占用首屏带宽、挤占真正关键资源的连接。
  *
  * Vite 会给字体加内容哈希，插件在 generateBundle 阶段拿到真实文件名，
  * 注入 <head>，并带上 crossorigin（字体请求必须 CORS，缺少会被丢弃并告警）。
  */
-function preloadIconFont() {
+const PRELOAD_FONTS: Array<{ name: string; re: RegExp }> = [
+  {
+    name: "icon",
+    re: /assets\/material-symbols-rounded-subset-.*\.woff2$/,
+  },
+  {
+    name: "body",
+    re: /assets\/noto-sans-sc-subset-.*\.woff2$/,
+  },
+];
+
+function preloadCriticalFonts() {
   return {
-    name: "preload-icon-font",
+    name: "preload-critical-fonts",
     enforce: "post" as const,
     transformIndexHtml(html: string, ctx: { bundle?: Record<string, any> }) {
-      const font = Object.keys(ctx.bundle ?? {}).find((f) =>
-        /assets\/material-symbols-rounded-subset-.*\.woff2$/.test(f),
-      );
-      if (!font) return html;
+      const files = Object.keys(ctx.bundle ?? {});
       // base 可能是 "/"（主站）或 "/REBLOG/"（GitHub Pages 分站），必须带上
       const base = process.env.VITE_BASE || "/";
-      const href = (base.endsWith("/") ? base : base + "/") + font.replace(/^\//, "");
-      return html.replace(
-        "</head>",
-        `  <link rel="preload" as="font" type="font/woff2" href="${href}" crossorigin>
-  </head>`,
-      );
+      const prefix = base.endsWith("/") ? base : base + "/";
+
+      const links: string[] = [];
+      for (const { re } of PRELOAD_FONTS) {
+        const font = files.find((f) => re.test(f));
+        if (!font) continue;
+        const href = prefix + font.replace(/^\//, "");
+        links.push(
+          `  <link rel="preload" as="font" type="font/woff2" href="${href}" crossorigin>`,
+        );
+      }
+      if (links.length === 0) return html;
+      return html.replace("</head>", links.join("\n") + "\n  </head>");
     },
   };
 }
@@ -72,7 +97,7 @@ function preloadIconFont() {
 export default defineConfig({
   // 分站（GitHub Pages）部署在 /REBLOG/ 子路径下，由 VITE_BASE 注入；主站保持 /
   base: process.env.VITE_BASE || "/",
-  plugins: [vue(), restoreDataUriQuotes(), preloadIconFont()],
+  plugins: [vue(), restoreDataUriQuotes(), preloadCriticalFonts()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
