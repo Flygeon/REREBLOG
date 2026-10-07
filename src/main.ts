@@ -1,7 +1,16 @@
 import { watch } from "vue";
 import { createApp } from "./app";
 import { currentTheme, initTheme } from "@lib/theme";
+import { initFontLoader } from "@lib/fontLoader";
 import { hydrateMermaid, resetMermaid } from "@lib/mermaid-view";
+
+/*
+  正文自托管字体改为延迟加载：首屏不占用带宽，等 load 之后才开始拉取。
+  首次访问会先用系统中文栈渲染，再到下一个会话换上本站字体；有缓存标记的
+  访客会在 <head> 同步拿到 @font-face，首帧即用本站字体（无切换动作）。
+  完整权衡见 src/lib/fontLoader.ts。
+*/
+initFontLoader();
 
 const { app, router } = createApp(false);
 

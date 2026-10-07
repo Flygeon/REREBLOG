@@ -1,5 +1,18 @@
 // ============================================================
-// Noto Sans SC 正文字体（自托管子集）
+// Noto Sans SC 正文字体（自托管子集）—— 样式层说明
+//
+// ⚠️ 本文件不包含 @font-face。加载逻辑已迁到 src/lib/fontLoader.ts。
+//    原因：只要 @font-face 出现在样式表里，浏览器 preload scanner 就会在解析 CSS
+//    时立刻发起字体请求（实测 swap / optional / block 三者行为一致，均在 6-9ms 发起、
+//    传输 346KB）—— font-display 只决定「下载好了怎么渲染」，决定不了「要不要下载」。
+//    想让首屏真正零字体流量，只能让 CSS 里压根不出现 @font-face。
+//
+// 现行策略（见 fontLoader.ts 的完整说明）：
+//   1. 首次访问 —— 正文直接用 --ll-font 里的系统中文栈（PingFang SC / 微软雅黑…）
+//      渲染，load 事件后 JS 才用 FontFace API 拉取并在下一个会话前换上本站字体。
+//   2. 再次访问 —— localStorage 有标记时同步注入 @font-face（font-display: optional），
+//      字体已在 HTTP 缓存中，首帧即用本站字体，无切换动作。
+//   3. JS 不可用 —— 永远停在系统字体，页面完全可读，属预期降级。
 //
 // 为什么自托管：原先引 Google Fonts 的 CSS，线上 Cloudflare Fonts 会把
 // Google 返回的 404 条 @font-face（4 字重 × 101 个 CJK 分片）**原样内联进
@@ -8,10 +21,8 @@
 // 首页 LCP 元素只是 45KB 的头像，却被这 1.4MB 字体挤到 11.7s 才加载完。
 //
 // 现在：单文件变量子集，覆盖 400-700 全部字重，全站字符。
-// 字体走 @font-face 声明，不再有 Google Fonts 的 <link>，Cloudflare Fonts
-// 也就不再有可内联的东西。
 //
-// ⚠️ 子集是「按当前内容裁剪」的，新增正文若用到范围外的生僻字会回退到系统字体
+// 子集是「按当前内容裁剪」的，新增正文若用到范围外的生僻字会回退到系统字体
 //   （不会显示成方框，只是字形与本站略有差异）。发长文后可重新生成，步骤：
 //   1. 装工具：python3 -m pip install --break-system-packages fonttools brotli
 //   2. 下载可变字体 NotoSansSC[wght].ttf（Google Fonts / notofonts 仓库）
@@ -27,20 +38,3 @@
 // 许可：Noto Sans SC 由 Google 以 SIL Open Font License 1.1 发布
 // https://fonts.google.com/noto/specimen/Noto+Sans+SC
 // ============================================================
-
-@font-face {
-  font-family: "Noto Sans SC";
-  font-style: normal;
-  /* 变量字体：一个文件覆盖 400-700，页面用到的 400/500/600/700 全部命中。
-     不支持可变字体的旧内核会退到默认实例（400），仅字重观感变平，不影响可读性。 */
-  font-weight: 400 700;
-  /* optional：字体加载不进首屏关键路径 —— 首次访问直接用系统中文栈渲染，
-     浏览器在「极短的字体加载窗口」（约 100ms，视连接情况）内拿到就用，
-     拿不到就本次访问不换字体，完全不阻塞渲染、不产生字形跳变；
-     同时浏览器仍在后台把字体下完并写进 HTTP 缓存，二次访问（含站内跳转）
-     命中缓存即刻生效。首屏字体流量因此归零（本地缓存命中时不重复下载）。
-     不用 swap —— 它是「先渲染再替换」，354KB 字体到位后整页字形会跳一下；
-     也不用 block —— 正文要为字体空白数秒。 */
-  font-display: optional;
-  src: url("../assets/fonts/noto-sans-sc-subset.woff2") format("woff2");
-}

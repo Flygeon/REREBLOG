@@ -9,7 +9,8 @@
 //   5. _blog            —— 博客功能层（列表 / 文章 / 归档 / 番剧 …）
 //   6. _sidenav         —— 侧边导航（侧边栏 / 断点 / 移动抽屉，覆盖模板 .nav）
 //   7. _icons           —— Material Symbols 图标字体（子集，自托管）
-//   8. _fonts           —— Noto Sans SC 正文字体（子集，自托管）
+//   8. _fonts           —— Noto Sans SC 说明：@font-face 已移交给
+//                          src/lib/fontLoader.ts 延迟注入，见该文件顶部原因
 // ============================================================
 
 @use "./template";
