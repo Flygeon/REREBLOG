@@ -34,23 +34,21 @@ function restoreDataUriQuotes() {
 /**
  * 把首屏必需的字体提前写进 <head> 的 <link rel="preload">。
  *
- * 为什么需要：字体原本只在构建后的 CSS 里被 url() 引用，浏览器要先拿到
+ * 为什么需要：图标字体原本只在构建后的 CSS 里被 url() 引用，浏览器要先拿到
  * CSS（首屏 CSS 是 ~200KB，压缩后 ~50KB）才发现字体，再发起第二个请求 ——
- * 字体在关键路径上被串行延后了一整个 RTT。
+ * 字体在关键路径上被串行延后了一整个 RTT，而它的 @font-face 用的是
+ * font-display: block（刻意不改 swap，见 _icons.scss 注释），
+ * 「发现得晚」会直接表现为首屏图标短暂空白。
  *
- * 这里同时预加载两类字体，它们的处境与动机不同：
+ * ⚠️ 只 preload 图标字体这一个首屏必需资源。两类字体刻意不 preload：
  *
- *  1. 图标字体 material-symbols-rounded-subset（6.8KB）
- *     @font-face 用的是 font-display: block（刻意不改 swap，见 _icons.scss 注释），
- *     所以「发现得晚」会直接表现为首屏图标短暂空白。
+ *  1. 正文可变字体 noto-sans-sc-subset（354KB，全站最大的单个资源）
+ *     它的 font-display 是 optional（见 _fonts.scss 注释）：首访不参与首屏
+ *     渲染，字体在后台下载并进缓存供后续命中。preload 会把它强行拉回关键
+ *     路径、重新抢占首屏带宽 —— 与 optional 的设计意图直接冲突，故必须排除。
  *
- *  2. 正文可变字体 noto-sans-sc-subset（354KB，首屏最大的单个资源）
- *     font-display: swap —— 中文正文会先用系统字体渲染，字体到位后回退替换。
- *     但 354KB 排在 CSS 之后串行下载，会让「系统字体 → 本站字体」的跳变
- *     明显后移（表现为整页字形抖一下）。提前与 CSS 并行下载能显著缩短这个窗口。
- *
- * ⚠️ 只 preload 这两个首屏必需的字体。KaTeX / Varlet 的字体不进首屏关键路径，
- *    不能加 —— 否则会白白占用首屏带宽、挤占真正关键资源的连接。
+ *  2. KaTeX / Varlet 的字体
+ *     不在首屏关键路径上，加了只会白白占用首屏带宽、挤占真正关键资源的连接。
  *
  * Vite 会给字体加内容哈希，插件在 generateBundle 阶段拿到真实文件名，
  * 注入 <head>，并带上 crossorigin（字体请求必须 CORS，缺少会被丢弃并告警）。
@@ -59,10 +57,6 @@ const PRELOAD_FONTS: Array<{ name: string; re: RegExp }> = [
   {
     name: "icon",
     re: /assets\/material-symbols-rounded-subset-.*\.woff2$/,
-  },
-  {
-    name: "body",
-    re: /assets\/noto-sans-sc-subset-.*\.woff2$/,
   },
 ];
 
